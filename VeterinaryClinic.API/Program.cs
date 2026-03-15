@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using VeterinaryClinic.API.Models;
+using VeterinaryClinic.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
