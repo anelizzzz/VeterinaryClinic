@@ -5,5 +5,7 @@ public enum AdoptionStatus
     Available = 0,
     Pending = 1,
     Reserved = 2,
-    Adopted = 3
+    Adopted = 3,
+    Rejected = 4,
+    Approved = 5
 }
