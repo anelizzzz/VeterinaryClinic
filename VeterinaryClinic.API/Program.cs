@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -14,14 +13,12 @@ using VeterinaryClinic.API.Services.Email;
 using VeterinaryClinic.API.Services.Pdf;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -30,13 +27,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowVueFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "https://veterinary-clinic-9mxjpmeag-anelizzzs-projects.vercel.app"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -70,6 +72,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -104,38 +107,19 @@ builder.Services.AddHttpClient<IAIDiagnosisService, AIDiagnosisService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<DiagnosisService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+
 var app = builder.Build();
-
-// PRIMUL lucru - înainte de orice altceva
-app.Use(async (context, next) =>
-{
-    context.Response.Headers["Access-Control-Allow-Origin"] = "*";
-    context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
-    context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept";
-
-    if (context.Request.Method == "OPTIONS")
-    {
-        context.Response.StatusCode = 204;
-        await context.Response.CompleteAsync();
-        return;
-    }
-
-    await next();
-});
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
 app.UseCors("AllowVueFrontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.UseStaticFiles();
-app.MapMethods("/api/{**path}", new[] { "OPTIONS" }, (HttpContext context) =>
-{
-    context.Response.Headers["Access-Control-Allow-Origin"] = "*";
-    context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
-    context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
-    return Results.Ok();
-});
+
 app.MapControllers();
 
 app.Run();
