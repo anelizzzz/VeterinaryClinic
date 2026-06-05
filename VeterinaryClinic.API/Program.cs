@@ -126,14 +126,7 @@ app.UseSwaggerUI();
 
 app.UseRouting();
 
-app.UseCors(policy =>
-{
-    policy
-        .AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader();
-});
-
+app.UseCors("ProductionCors");
 app.UseAuthentication();
 app.UseAuthorization();
 
