@@ -10,6 +10,7 @@ using VeterinaryClinic.API.Services;
 using VeterinaryClinic.API.Services.AiDiagnosis;
 using VeterinaryClinic.API.Services.Diagnosis;
 using VeterinaryClinic.API.Services.Doctor;
+using VeterinaryClinic.API.Services.Email;
 using VeterinaryClinic.API.Services.Pdf;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -102,6 +103,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddHttpClient<IAIDiagnosisService, AIDiagnosisService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<DiagnosisService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 var app = builder.Build();
 
 //if (app.Environment.IsDevelopment())
