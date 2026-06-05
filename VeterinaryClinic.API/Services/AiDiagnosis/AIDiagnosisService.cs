@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
+﻿using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Threading.Tasks;
 using VeterinaryClinic.API.DTOs.AiDiagnosis;
 
 namespace VeterinaryClinic.API.Services.AiDiagnosis
@@ -33,71 +28,47 @@ namespace VeterinaryClinic.API.Services.AiDiagnosis
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
             var systemPrompt =
-                "Ești un asistent veterinar. Analizează fișa medicală și oferă doar o estimare orientativă, nu un diagnostic definitiv. " +
-                "Returnează strict JSON conform schemei cerute. Nu inventa informații lipsă. " +
-                "Dacă datele sunt insuficiente, spune că este nevoie de consult suplimentar.";
+                "Ești un asistent veterinar AI. Analizează datele medicale și rezultatele de laborator ale animalului și oferă o estimare orientativă. " +
+                "Nu oferi un diagnostic definitiv — acesta aparține medicului veterinar. " +
+                "Dacă datele sunt insuficiente, menționează că este nevoie de consult suplimentar. " +
+                "Returnează EXCLUSIV un obiect JSON valid, fără text suplimentar, fără markdown, fără backtick-uri.";
 
             var userPrompt = $"""
             Date pacient:
             Nume: {dto.PetName}
             Specie: {dto.Species}
             Rasă: {dto.Breed}
-            Vârstă: {dto.Age}
+            Vârstă: {dto.Age} ani
 
             Fișă medicală:
-            Diagnostic: {dto.Diagnosis}
-            Tratament: {dto.Treatment}
-            Observații: {dto.Observations}
+            Diagnostic existent: {(string.IsNullOrWhiteSpace(dto.Diagnosis) ? "Neprecizat" : dto.Diagnosis)}
+            Tratament: {(string.IsNullOrWhiteSpace(dto.Treatment) ? "Neprecizat" : dto.Treatment)}
+            Observații: {(string.IsNullOrWhiteSpace(dto.Observations) ? "Nicio observație" : dto.Observations)}
 
             Rezultate laborator:
             {string.Join("\n", dto.LabResults.Select(x => "- " + x))}
+
+            Răspunde DOAR cu un obiect JSON cu câmpurile: possibleCauses (array de string-uri), urgencyLevel (Scăzut/Mediu/Ridicat/Critic), recommendedNextSteps (string), confidence (număr 0-1), disclaimer (string).
             """;
 
+            // Folosim Chat Completions API (/v1/chat/completions)
             var request = new
             {
                 model,
-                input = new object[]
+                messages = new object[]
                 {
                     new { role = "system", content = systemPrompt },
                     new { role = "user", content = userPrompt }
                 },
-                response_format = new
-                {
-                    type = "json_schema",
-                    json_schema = new
-                    {
-                        name = "ai_diagnosis_response",
-                        strict = true,
-                        schema = new
-                        {
-                            type = "object",
-                            properties = new
-                            {
-                                possibleCauses = new
-                                {
-                                    type = "array",
-                                    items = new { type = "string" }
-                                },
-                                urgencyLevel = new { type = "string" },
-                                recommendedNextSteps = new { type = "string" },
-                                confidence = new { type = "number" },
-                                disclaimer = new { type = "string" }
-                            },
-                            required = new[]
-                            {
-                                "possibleCauses",
-                                "urgencyLevel",
-                                "recommendedNextSteps",
-                                "confidence",
-                                "disclaimer"
-                            },
-                            additionalProperties = false
-                        }
-                    }
-                }
+                response_format = new { type = "json_object" },
+                temperature = 0.3,
+                max_tokens = 1000
             };
 
-            var response = await _httpClient.PostAsJsonAsync("https://api.openai.com/v1/responses", request, cancellationToken);
+            var response = await _httpClient.PostAsJsonAsync(
+                "https://api.groq.com/openai/v1/chat/completions",
+                request,
+                cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -109,10 +80,11 @@ namespace VeterinaryClinic.API.Services.AiDiagnosis
             using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
 
+            // Chat Completions răspunde în choices[0].message.content
             var outputText = document.RootElement
-                .GetProperty("output")[0]
-                .GetProperty("content")[0]
-                .GetProperty("text")
+                .GetProperty("choices")[0]
+                .GetProperty("message")
+                .GetProperty("content")
                 .GetString();
 
             if (string.IsNullOrWhiteSpace(outputText))
@@ -126,4 +98,3 @@ namespace VeterinaryClinic.API.Services.AiDiagnosis
         }
     }
 }
-

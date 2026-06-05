@@ -1,129 +1,14 @@
-<template>
-  <section class="page doctor-appointments">
-    <header class="page-header">
-      <div>
-        <span class="eyebrow">Doctor Dashboard</span>
-        <h1>Programările mele</h1>
-        <p>Vezi consultațiile de azi, viitoare și istoricul lor.</p>
-      </div>
-
-      <div class="header-actions">
-        <input v-model="search" type="text" placeholder="Caută după pacient..." />
-        <select v-model="statusFilter">
-  <option value="">Toate statusurile</option>
-  <option :value="0">În așteptare</option>
-  <option :value="1">Confirmate</option>
-  <option :value="2">Anulate</option>
-  <option :value="3">Finalizate</option>
-</select>
-
-<select v-model="typeFilter">
-  <option value="">Toate tipurile</option>
-  <option :value="0">Control</option>
-  <option :value="1">Vaccinare</option>
-  <option :value="2">Intervenție</option>
-  <option :value="3">Urgență</option>
-  <option :value="4">Follow-up</option>
-</select>
-      </div>
-    </header>
-
-    <div class="cards">
-      <article class="stat-card">
-        <span>Azi</span>
-        <strong>{{ todayCount }}</strong>
-        <p>Programări în ziua curentă</p>
-      </article>
-
-      <article class="stat-card">
-        <span>Viitoare</span>
-        <strong>{{ upcomingCount }}</strong>
-        <p>Consultații programate</p>
-      </article>
-
-      <article class="stat-card">
-        <span>Finalizate</span>
-        <strong>{{ completedCount }}</strong>
-        <p>Vizite încheiate cu succes</p>
-      </article>
-    </div>
-
-    <div class="table-card">
-      <div class="table-head">
-        <h2>Lista programărilor</h2>
-        <span>{{ filteredAppointments.length }} rezultate</span>
-      </div>
-
-      <div v-if="loading" class="state-box">Se încarcă programările...</div>
-      <div v-else-if="error" class="state-box error">{{ error }}</div>
-
-      <div v-else class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Pacient</th>
-              <th>Proprietar</th>
-              <th>Data</th>
-              <th>Tip</th>
-              <th>Status</th>
-              <th>Note</th>
-              <th>Acțiuni</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="appointment in filteredAppointments" :key="appointment.id">
-              <td>
-                <div class="cell-title">{{ appointment.petName }}</div>
-              </td>
-              <td>{{ appointment.clientName }}</td>
-              <td>{{ formatDate(appointment.date) }}</td>
-              <td>
-                <span class="chip">{{ getTypeLabel(appointment.type) }}</span>
-              </td>
-              <td>
-                <span class="status-badge" :class="getStatusClass(appointment.status)">
-                  {{ getStatusLabel(appointment.status) }}
-                </span>
-              </td>
-              <td class="notes-cell">{{ appointment.notes }}</td>
-              <td>
-                <div class="row-actions">
-                  <button class="action-btn secondary" @click="goToDetails(appointment.id)">
-                    Detalii
-                   </button>
-                  <button class="action-btn" @click="editAppointment(appointment.id)">
-                    Editează
-                  </button>
-               </div>
-                </td>
-            </tr>
-
-            <tr v-if="filteredAppointments.length === 0">
-              <td colspan="7" class="empty-row">
-                Nu există programări pentru filtrele selectate.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-</template>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { getDoctorAppointments, type AppointmentResponseDto } from '../../api/services/appointmentService'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-
-
 const search = ref('')
 const statusFilter = ref('')
 const typeFilter = ref('')
 const loading = ref(false)
 const error = ref('')
-
 const appointments = ref<AppointmentResponseDto[]>([])
 
 const loadAppointments = async () => {
@@ -139,401 +24,271 @@ const loadAppointments = async () => {
   }
 }
 
-onMounted(() => {
-  loadAppointments()
-})
+onMounted(() => { loadAppointments() })
 
 const filteredAppointments = computed(() => {
   const term = search.value.toLowerCase().trim()
-
-  return appointments.value.filter((appointment) => {
-    const matchesSearch =
-      !term ||
-      appointment.petName.toLowerCase().includes(term) ||
-      appointment.clientName.toLowerCase().includes(term) ||
-      appointment.notes.toLowerCase().includes(term)
-
-    const matchesStatus = !statusFilter.value || String(appointment.status) === statusFilter.value
-    const matchesType = !typeFilter.value || String(appointment.type) === typeFilter.value
-
-    return matchesSearch && matchesStatus && matchesType
-  })
+  return appointments.value
+    .filter((a) => {
+      const matchesSearch = !term ||
+        a.petName.toLowerCase().includes(term) ||
+        a.clientName.toLowerCase().includes(term) ||
+        a.notes?.toLowerCase().includes(term)
+      const matchesStatus = statusFilter.value === '' || String(a.status) === statusFilter.value
+      const matchesType = typeFilter.value === '' || String(a.type) === typeFilter.value
+      return matchesSearch && matchesStatus && matchesType
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 })
 
 const todayCount = computed(() => {
   const today = new Date().toDateString()
-  return appointments.value.filter((a) => new Date(a.date).toDateString() === today).length
+  return appointments.value.filter(a => new Date(a.date).toDateString() === today).length
 })
 
 const upcomingCount = computed(() => {
   const now = new Date()
-  return appointments.value.filter(
-    (a) => new Date(a.date) > now && String(a.status) !== 'Completed' && String(a.status) !== '3'
-  ).length
+  return appointments.value.filter(a => new Date(a.date) > now && String(a.status) !== '3').length
 })
 
 const completedCount = computed(() => {
-  return appointments.value.filter((a) => String(a.status) === 'Completed' || String(a.status) === '3').length
+  return appointments.value.filter(a => String(a.status) === '3').length
 })
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleString('ro-RO', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  })
+  return new Date(value).toLocaleString('ro-RO', { dateStyle: 'medium', timeStyle: 'short' })
 }
+
+function formatDateShort(value: string) {
+  return new Date(value).toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' })
+}
+
+function formatTime(value: string) {
+  return new Date(value).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })
+}
+
+function isToday(value: string) {
+  return new Date(value).toDateString() === new Date().toDateString()
+}
+
+function isPast(value: string) {
+  return new Date(value) < new Date()
+}
+
 function goToDetails(id: number) {
   router.push(`/doctor/appointments/${id}`)
 }
 
-function editAppointment(id: number) {
-  router.push(`/doctor/appointments/edit/${id}`)
-}
 function getStatusLabel(status: string | number) {
-  const map: Record<string, string> = {
-    Pending: 'În așteptare',
-    Confirmed: 'Confirmată',
-    Cancelled: 'Anulată',
-    Completed: 'Finalizată',
-    '0': 'În așteptare',
-    '1': 'Confirmată',
-    '2': 'Anulată',
-    '3': 'Finalizată'
-  }
+  const map: Record<string, string> = { '0': 'În așteptare', '1': 'Confirmată', '2': 'Anulată', '3': 'Finalizată' }
   return map[String(status)] ?? String(status)
 }
 
 function getTypeLabel(type: string | number) {
-  const map: Record<string, string> = {
-    Checkup: 'Control',
-    Vaccination: 'Vaccinare',
-    Surgery: 'Intervenție',
-    Emergency: 'Urgență',
-    FollowUp: 'Follow-up',
-    '0': 'Control',
-    '1': 'Vaccinare',
-    '2': 'Intervenție',
-    '3': 'Urgență',
-    '4': 'Follow-up'
-  }
+  const map: Record<string, string> = { '0': 'Control', '1': 'Vaccinare', '2': 'Intervenție', '3': 'Urgență', '4': 'Follow-up' }
   return map[String(type)] ?? String(type)
 }
 
+function getTypeIcon(type: string | number) {
+  const map: Record<string, string> = { '0': '🩺', '1': '💉', '2': '🔬', '3': '🚨', '4': '📋' }
+  return map[String(type)] ?? '📅'
+}
+
 function getStatusClass(status: string | number) {
-  const map: Record<string, string> = {
-    Pending: 'pending',
-    Confirmed: 'confirmed',
-    Cancelled: 'cancelled',
-    Completed: 'completed',
-    '0': 'pending',
-    '1': 'confirmed',
-    '2': 'cancelled',
-    '3': 'completed'
-  }
+  const map: Record<string, string> = { '0': 'pending', '1': 'confirmed', '2': 'cancelled', '3': 'completed' }
   return map[String(status)] ?? ''
 }
 </script>
 
+<template>
+  <section class="page">
+    <!-- Header -->
+    <header class="page-header">
+      <div>
+        <span class="eyebrow">Doctor Dashboard</span>
+        <h1>Programările mele</h1>
+        <p>Vezi consultațiile de azi, viitoare și istoricul lor.</p>
+      </div>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card today">
+        <div class="stat-icon">📅</div>
+        <div class="stat-content">
+          <strong>{{ todayCount }}</strong>
+          <span>Azi</span>
+        </div>
+      </div>
+      <div class="stat-card upcoming">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+          <strong>{{ upcomingCount }}</strong>
+          <span>Viitoare</span>
+        </div>
+      </div>
+      <div class="stat-card completed">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <strong>{{ completedCount }}</strong>
+          <span>Finalizate</span>
+        </div>
+      </div>
+      <div class="stat-card total">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <strong>{{ appointments.length }}</strong>
+          <span>Total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtre -->
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input v-model="search" type="text" placeholder="Caută după pacient sau proprietar..." />
+      </div>
+      <select v-model="statusFilter">
+        <option value="">Toate statusurile</option>
+        <option value="0">În așteptare</option>
+        <option value="1">Confirmate</option>
+        <option value="2">Anulate</option>
+        <option value="3">Finalizate</option>
+      </select>
+      <select v-model="typeFilter">
+        <option value="">Toate tipurile</option>
+        <option value="0">Control</option>
+        <option value="1">Vaccinare</option>
+        <option value="2">Intervenție</option>
+        <option value="3">Urgență</option>
+        <option value="4">Follow-up</option>
+      </select>
+    </div>
+
+    <!-- Stări -->
+    <div v-if="loading" class="state-box">Se încarcă programările...</div>
+    <div v-else-if="error" class="state-box error">{{ error }}</div>
+
+    <!-- Lista carduri -->
+    <div v-else-if="filteredAppointments.length === 0" class="state-box">
+      Nu există programări pentru filtrele selectate.
+    </div>
+
+    <div v-else class="appointments-list">
+      <div
+        v-for="appointment in filteredAppointments"
+        :key="appointment.id"
+        class="appointment-card"
+        :class="{ 'is-today': isToday(appointment.date), 'is-past': isPast(appointment.date) && String(appointment.status) !== '3' }"
+        @click="goToDetails(appointment.id)"
+      >
+        <!-- Data -->
+        <div class="card-date">
+          <div class="date-day">{{ formatDateShort(appointment.date) }}</div>
+          <div class="date-time">{{ formatTime(appointment.date) }}</div>
+          <div v-if="isToday(appointment.date)" class="today-badge">Azi</div>
+        </div>
+
+        <!-- Info principal -->
+        <div class="card-main">
+          <div class="card-top">
+            <span class="type-icon">{{ getTypeIcon(appointment.type) }}</span>
+            <span class="type-label">{{ getTypeLabel(appointment.type) }}</span>
+            <span class="status-badge" :class="getStatusClass(appointment.status)">
+              {{ getStatusLabel(appointment.status) }}
+            </span>
+          </div>
+          <div class="pet-name">{{ appointment.petName }}</div>
+          <div class="client-name">Proprietar: {{ appointment.clientName }}</div>
+          <div v-if="appointment.notes" class="notes">{{ appointment.notes }}</div>
+        </div>
+
+        <!-- Arrow -->
+        <div class="card-arrow">→</div>
+      </div>
+    </div>
+
+    <!-- Counter -->
+    <div v-if="!loading && !error && filteredAppointments.length > 0" class="results-count">
+      {{ filteredAppointments.length }} programări găsite
+    </div>
+  </section>
+</template>
+
 <style scoped>
-.page {
-  padding: 32px 24px;
-  max-width: 1280px;
-  margin: 0 auto;
+.page { padding: 32px 24px; max-width: 1100px; margin: 0 auto; }
+
+.eyebrow { display: inline-block; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #ec4899; font-weight: 700; margin-bottom: 10px; }
+.page-header { margin-bottom: 28px; }
+.page-header h1 { font-size: clamp(1.8rem, 1.4rem + 1.5vw, 2.6rem); color: #1f2937; margin-bottom: 6px; }
+.page-header p { color: #6b7280; }
+
+/* Stats */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: white; border-radius: 18px; padding: 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #f3f4f6; }
+.stat-icon { font-size: 1.8rem; }
+.stat-content strong { display: block; font-size: 1.8rem; font-weight: 800; color: #1f2937; line-height: 1; }
+.stat-content span { font-size: 0.82rem; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-card.today { border-left: 4px solid #f59e0b; }
+.stat-card.upcoming { border-left: 4px solid #3b82f6; }
+.stat-card.completed { border-left: 4px solid #10b981; }
+.stat-card.total { border-left: 4px solid #ec4899; }
+
+/* Filtre */
+.filters-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+.search-wrap { position: relative; flex: 1; min-width: 240px; }
+.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.95rem; }
+.search-wrap input { width: 100%; border: 1px solid #e5e7eb; border-radius: 14px; padding: 11px 14px 11px 38px; background: white; color: #111827; box-sizing: border-box; }
+.search-wrap input:focus { outline: none; border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236,72,153,0.12); }
+.filters-bar select { border: 1px solid #e5e7eb; border-radius: 14px; padding: 11px 14px; background: white; color: #374151; cursor: pointer; }
+.filters-bar select:focus { outline: none; border-color: #ec4899; }
+
+/* Lista */
+.appointments-list { display: grid; gap: 10px; }
+
+.appointment-card {
+  background: white; border-radius: 18px; border: 1px solid #f3f4f6;
+  padding: 18px 20px; display: flex; align-items: center; gap: 20px;
+  cursor: pointer; transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
+.appointment-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); border-color: #ec4899; }
+.appointment-card.is-today { border-left: 4px solid #f59e0b; background: linear-gradient(135deg, #fffbeb, white); }
+.appointment-card.is-past { opacity: 0.7; }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 24px;
-  flex-wrap: wrap;
-  margin-bottom: 24px;
-}
+.card-date { text-align: center; min-width: 60px; }
+.date-day { font-size: 0.9rem; font-weight: 700; color: #374151; }
+.date-time { font-size: 1.1rem; font-weight: 800; color: #1f2937; margin-top: 2px; }
+.today-badge { display: inline-block; margin-top: 4px; font-size: 0.7rem; font-weight: 700; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; }
 
-.eyebrow {
-  display: inline-block;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #ec4899;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
+.card-main { flex: 1; }
+.card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.type-icon { font-size: 1.1rem; }
+.type-label { font-size: 0.82rem; font-weight: 600; color: #6b7280; background: #f9fafb; padding: 3px 10px; border-radius: 999px; border: 1px solid #e5e7eb; }
+.pet-name { font-size: 1.05rem; font-weight: 700; color: #1f2937; }
+.client-name { font-size: 0.88rem; color: #6b7280; margin-top: 2px; }
+.notes { font-size: 0.85rem; color: #9ca3af; margin-top: 4px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px; }
 
-.page-header h1 {
-  font-size: clamp(2rem, 1.4rem + 1.5vw, 2.8rem);
-  line-height: 1.1;
-  margin-bottom: 8px;
-  color: #1f2937;
-}
+.card-arrow { font-size: 1.2rem; color: #d1d5db; transition: color 0.2s, transform 0.2s; }
+.appointment-card:hover .card-arrow { color: #ec4899; transform: translateX(4px); }
 
-.page-header p {
-  color: #6b7280;
-  max-width: 60ch;
-}
+.status-badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+.status-badge.pending { background: #fef3c7; color: #92400e; }
+.status-badge.confirmed { background: #dbeafe; color: #1d4ed8; }
+.status-badge.cancelled { background: #fee2e2; color: #b91c1c; }
+.status-badge.completed { background: #dcfce7; color: #166534; }
 
-.header-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
-}
+.state-box { padding: 32px; border-radius: 18px; background: #f9fafb; color: #374151; text-align: center; border: 1px dashed #d1d5db; }
+.state-box.error { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
 
-.header-actions input,
-.header-actions select {
-  min-width: 220px;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 12px 14px;
-  background: #fff;
-  color: #111827;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-}
-
-.header-actions input:focus,
-.header-actions select:focus {
-  outline: none;
-  border-color: #ec4899;
-  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.12);
-}
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  background: linear-gradient(180deg, #ffffff 0%, #fff7fb 100%);
-  border: 1px solid #f3d7e6;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(236, 72, 153, 0.08);
-}
-
-.stat-card span {
-  display: block;
-  color: #9f1239;
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 10px;
-}
-
-.stat-card strong {
-  display: block;
-  font-size: 2rem;
-  line-height: 1;
-  color: #111827;
-  margin-bottom: 8px;
-}
-
-.stat-card p {
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.table-card {
-  background: #fff;
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
-  border: 1px solid #f3f4f6;
-}
-
-.table-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.table-head h2 {
-  font-size: 1.1rem;
-  color: #111827;
-}
-
-.table-head span {
-  font-size: 14px;
-  color: #6b7280;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  padding: 8px 12px;
-  border-radius: 999px;
-}
-
-.table-scroll {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  text-align: left;
-  padding: 16px 14px;
-  border-bottom: 1px solid #eef2f7;
-  vertical-align: top;
-}
-
-th {
-  color: #374151;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-td {
-  color: #4b5563;
-}
-
-.cell-title {
-  font-weight: 700;
-  color: #111827;
-}
-
-.notes-cell {
-  max-width: 280px;
-  white-space: normal;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  font-size: 13px;
-  color: #374151;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  padding: 7px 11px;
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.status-badge.pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-badge.confirmed {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-.status-badge.cancelled {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.status-badge.completed {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.action-btn {
-  border: none;
-  border-radius: 12px;
-  padding: 10px 14px;
-  background: #ec4899;
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.action-btn:hover {
-  background: #db2777;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(236, 72, 153, 0.2);
-}
-
-.empty-row {
-  text-align: center;
-  padding: 28px 16px;
-  color: #6b7280;
-}
-
-.state-box {
-  padding: 24px;
-  border-radius: 16px;
-  background: #f9fafb;
-  color: #374151;
-  text-align: center;
-  border: 1px dashed #d1d5db;
-}
-
-.state-box.error {
-  background: #fef2f2;
-  color: #b91c1c;
-  border-color: #fecaca;
-}
-
-@media (max-width: 1024px) {
-  .cards {
-    grid-template-columns: 1fr;
-  }
-
-  .header-actions {
-    width: 100%;
-  }
-
-  .header-actions input,
-  .header-actions select {
-    min-width: 0;
-    width: 100%;
-  }
-}
+.results-count { text-align: center; margin-top: 16px; font-size: 0.85rem; color: #9ca3af; }
 
 @media (max-width: 768px) {
-  .page {
-    padding: 20px 14px;
-  }
-
-  .table-card {
-    padding: 16px;
-    border-radius: 18px;
-  }
-
-  th,
-  td {
-    padding: 12px 10px;
-  }
-
-  .table-head {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-.row-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.action-btn.secondary {
-  background: #f3f4f6;
-  color: #1f2937;
-}
-
-.action-btn.secondary:hover {
-  background: #e5e7eb;
-  box-shadow: none;
-  transform: translateY(-1px);
-}
+  .page { padding: 20px 14px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .appointment-card { flex-wrap: wrap; }
+  .card-arrow { display: none; }
+  .notes { max-width: 100%; }
 }
 </style>

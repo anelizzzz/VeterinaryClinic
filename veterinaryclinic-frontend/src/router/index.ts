@@ -10,6 +10,18 @@ const routes = [
     component: () => import('../views/DashboardView.vue')
   },
 
+  // PAGINI PUBLICE
+  {
+    path: '/despre-noi',
+    name: 'DespreNoi',
+    component: () => import('../views/DespreNoiView.vue')
+  },
+  {
+    path: '/contact',
+    name: 'Contact',
+    component: () => import('../views/ContactView.vue')
+  },
+
   // PAGINA ADOPTII
   {
     path: '/adoptii',
@@ -62,6 +74,7 @@ const routes = [
     component: () => import('../views/admin/AdoptionRequestsView.vue'),
     meta: { requiresAuth: true, role: UserRole.Admin }
   },
+
   // DOCTOR
   {
     path: '/doctor/patients',
@@ -82,29 +95,29 @@ const routes = [
     meta: { requiresAuth: true, role: UserRole.Doctor }
   },
   {
-  path: '/doctor/lab-results/create/:petId',
-  name: 'doctor-lab-result-create',
-  component: () => import('../views/doctor/DoctorLabResultCreateView.vue'),
-  meta: { requiresAuth: true, roles: ['Doctor'] }
-},
-{
-  path: '/doctor/lab-results/:petId',
-  name: 'doctor-lab-results',
-  component: () => import('../views/doctor/DoctorLabResultsView.vue'),
-  meta: { requiresAuth: true, roles: ['Doctor'] }
-},
-{
-  path: '/doctor/medical-records/create/:petId',
-  name: 'doctor-medical-record-create',
-  component: () => import('../views/doctor/DoctorMedicalRecordCreateView.vue'),
-  meta: { requiresAuth: true, roles: ['Doctor'] }
-},
-{
-  path: '/doctor/medical-records/:petId',
-  name: 'doctor-medical-records',
-  component: () => import('../views/doctor/DoctorMedicalRecordsView.vue'),
-  meta: { requiresAuth: true, roles: ['Doctor'] }
-},
+    path: '/doctor/lab-results/create/:petId',
+    name: 'doctor-lab-result-create',
+    component: () => import('../views/doctor/DoctorLabResultCreateView.vue'),
+    meta: { requiresAuth: true, roles: ['Doctor'] }
+  },
+  {
+    path: '/doctor/lab-results/:petId',
+    name: 'doctor-lab-results',
+    component: () => import('../views/doctor/DoctorLabResultsView.vue'),
+    meta: { requiresAuth: true, roles: ['Doctor'] }
+  },
+  {
+    path: '/doctor/medical-records/create/:petId',
+    name: 'doctor-medical-record-create',
+    component: () => import('../views/doctor/DoctorMedicalRecordCreateView.vue'),
+    meta: { requiresAuth: true, roles: ['Doctor'] }
+  },
+  {
+    path: '/doctor/medical-records/:petId',
+    name: 'doctor-medical-records',
+    component: () => import('../views/doctor/DoctorMedicalRecordsView.vue'),
+    meta: { requiresAuth: true, roles: ['Doctor'] }
+  },
   {
     path: '/doctor/profile',
     name: 'doctor-profile',
@@ -112,17 +125,18 @@ const routes = [
     meta: { requiresAuth: true, role: UserRole.Doctor }
   },
   {
-  path: '/doctor/lab-results/create/:petId',
-  name: 'doctor-lab-result-create',
-  component: () => import('../views/doctor/DoctorLabResultCreateView.vue'),
-  meta: { requiresAuth: true, role: UserRole.Doctor }
+    path: '/doctor/profile/edit',
+    name: 'doctor-profile-edit',
+    component: () => import('../views/doctor/DoctorProfileEditView.vue'),
+    meta: { requiresAuth: true, role: UserRole.Doctor }
   },
   {
-  path: '/doctor/patients/:petId',
-  name: 'doctor-patient-details',
-  component: () => import('../views/doctor/DoctorPatientDetailsView.vue'),
-  meta: { requiresAuth: true, roles: ['Doctor'] }
-},
+    path: '/doctor/patients/:petId',
+    name: 'doctor-patient-details',
+    component: () => import('../views/doctor/DoctorPatientDetailsView.vue'),
+    meta: { requiresAuth: true, roles: ['Doctor'] }
+  },
+
   // CLIENT
   {
     path: '/my-pets',
@@ -149,6 +163,12 @@ const routes = [
     meta: { requiresAuth: true, role: UserRole.Client }
   },
   {
+    path: '/client/profile/edit',
+    name: 'client-profile-edit',
+    component: () => import('../views/client/ClientProfileEditView.vue'),
+    meta: { requiresAuth: true, role: UserRole.Client }
+  },
+  {
     path: '/client/pets/create',
     name: 'client-create-pet',
     component: () => import('../views/client/CreatePetView.vue'),
@@ -160,32 +180,30 @@ const routes = [
     component: () => import('../views/client/PetEditView.vue'),
     meta: { requiresAuth: true, role: UserRole.Client }
   },
-
   {
     path: '/client/adoption-requests',
     name: 'my-adoption-requests',
     component: () => import('../views/client/MyAdoptionRequestsView.vue'),
     meta: { requiresAuth: true, role: UserRole.Client }
   },
-
   {
     path: '/admin/adoptions',
     name: 'admin-adoptions',
     component: () => import('../views/admin/AdminAdoptionsView.vue'),
     meta: { requiresAuth: true, role: UserRole.Admin }
   },
-   {
-  path: '/client/pets/:petId/medical-records',
-  name: 'client-medical-records',
-  component: () => import('../views/client/ClientMedicalRecordsView.vue'),
-  meta: { requiresAuth: true, roles: ['Client'] }
-},
-{
-  path: '/client/pets/:petId/lab-results',
-  name: 'client-lab-results',
-  component: () => import('../views/client/ClientLabResultsView.vue'),
-  meta: { requiresAuth: true, roles: ['Client'] }
-}, 
+  {
+    path: '/client/pets/:petId/medical-records',
+    name: 'client-medical-records',
+    component: () => import('../views/client/ClientMedicalRecordsView.vue'),
+    meta: { requiresAuth: true, roles: ['Client'] }
+  },
+  {
+    path: '/client/pets/:petId/lab-results',
+    name: 'client-lab-results',
+    component: () => import('../views/client/ClientLabResultsView.vue'),
+    meta: { requiresAuth: true, roles: ['Client'] }
+  },
 
   // COMUNE
   {
@@ -221,13 +239,15 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()
-
+  
+  authStore.loadUser() // ← adaugă această linie
+  
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return '/login'
   }
 
   if (
-    (to.path === '/login' || to.path === '/register' || to.path === '/') &&
+    (to.path === '/login' || to.path === '/register') &&
     authStore.isAuthenticated
   ) {
     return '/dashboard'

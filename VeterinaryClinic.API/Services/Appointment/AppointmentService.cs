@@ -3,16 +3,19 @@ using VeterinaryClinic.API.Dtos.Appointment;
 using VeterinaryClinic.API.DTOs.Appointment;
 using VeterinaryClinic.API.Models.Entities;
 using VeterinaryClinic.API.Models.Entities.Enums;
+using VeterinaryClinic.API.Services.Email;
 
 namespace VeterinaryClinic.API.Services
 {
     public class AppointmentService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IEmailService _emailService;
 
-        public AppointmentService(IUnitOfWork unitOfWork)
+        public AppointmentService(IUnitOfWork unitOfWork, IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
+            _emailService = emailService;
         }
 
         public async Task<IEnumerable<AppointmentResponseDto>> GetAllAsync()
@@ -142,6 +145,41 @@ namespace VeterinaryClinic.API.Services
             };
 
             await _unitOfWork.Appointments.AddAsync(appointment);
+
+            // Trimitem email de confirmare
+            try
+            {
+                var client = await _unitOfWork.Clients.GetByIdAsync(dto.ClientId);
+                var pet = await _unitOfWork.Pets.GetByIdAsync(dto.PetId);
+                var doctor = await _unitOfWork.Doctors.GetByIdAsync(dto.DoctorId);
+
+                if (client?.User?.Email is not null)
+                {
+                    var typeLabel = dto.Type switch
+                    {
+                        AppointmentType.Checkup => "Control",
+                        AppointmentType.Vaccination => "Vaccinare",
+                        AppointmentType.Surgery => "Intervenție chirurgicală",
+                        AppointmentType.Emergency => "Urgență",
+                        AppointmentType.FollowUp => "Follow-up",
+                        _ => dto.Type.ToString()
+                    };
+
+                    await _emailService.SendAppointmentConfirmationAsync(
+                        toEmail: client.User.Email,
+                        clientName: client.User.Name,
+                        petName: pet?.Name ?? "Animal",
+                        doctorName: doctor?.User?.Name ?? "Medicul dumneavoastră",
+                        date: dto.Date,
+                        appointmentType: typeLabel,
+                        notes: dto.Notes
+                    );
+                }
+            }
+            catch
+            {
+                // Email-ul nu blochează crearea programării
+            }
 
             return new AppointmentResponseDto
             {

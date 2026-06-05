@@ -1,9 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VeterinaryClinic.API.DTOs.AiDiagnosis;
 using VeterinaryClinic.API.Services.AiDiagnosis;
 
@@ -12,20 +7,30 @@ namespace VeterinaryClinic.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     public class AIDiagnosisController : ControllerBase
-
     {
         private readonly IAIDiagnosisService _aiDiagnosisService;
+        private readonly ILogger<AIDiagnosisController> _logger;
 
-        public AIDiagnosisController(IAIDiagnosisService aiDiagnosisService)
+        public AIDiagnosisController(IAIDiagnosisService aiDiagnosisService, ILogger<AIDiagnosisController> logger)
         {
             _aiDiagnosisService = aiDiagnosisService;
+            _logger = logger;
         }
 
         [HttpPost]
         public async Task<IActionResult> Generate([FromBody] AIDiagnosisRequestDto dto, CancellationToken cancellationToken)
         {
-            var result = await _aiDiagnosisService.GenerateAsync(dto, cancellationToken);
-            return Ok(result);
+            try
+            {
+                var result = await _aiDiagnosisService.GenerateAsync(dto, cancellationToken);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "AI Diagnosis failed");
+                // Returnăm mesajul exact ca să vedem ce s-a întâmplat
+                return StatusCode(500, new { error = ex.Message, inner = ex.InnerException?.Message });
+            }
         }
     }
 }

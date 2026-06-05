@@ -3,6 +3,7 @@ using VeterinaryClinic.API.Models.Entities;
 using VeterinaryClinic.API.Repositories.Adoptions;
 using VeterinaryClinic.API.Repositories.Appointments;
 using VeterinaryClinic.API.Repositories.Clients;
+using VeterinaryClinic.API.Repositories.Diagnoses;
 using VeterinaryClinic.API.Repositories.Doctors;
 using VeterinaryClinic.API.Repositories.LabReults;
 using VeterinaryClinic.API.Repositories.MedicalRecords;
@@ -20,11 +21,11 @@ namespace VeterinaryClinic.API.Services
         public AdoptionRequestRepository? AdoptionRequests { get; }
         public LabResultRepository? LabResults { get; }
         public MedicalRecordRepository? MedicalRecords { get; }
-
         public UserRepository? Users { get; }
         public ClientRepository? Clients { get; }
         public DoctorRepository? Doctors { get; }
         public PetRepository? Pets { get; }
+        public DiagnosisRepository Diagnoses { get; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -38,7 +39,9 @@ namespace VeterinaryClinic.API.Services
             Clients = new ClientRepository(_context);
             Doctors = new DoctorRepository(_context);
             Pets = new PetRepository(_context);
+            Diagnoses = new DiagnosisRepository(_context);
         }
+
         public async Task<int> SaveChangesAsync()
             => await _context.SaveChangesAsync();
 

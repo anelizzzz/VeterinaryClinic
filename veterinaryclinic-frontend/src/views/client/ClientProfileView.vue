@@ -1,303 +1,132 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import {
-  getClientProfile,
-  updateClientProfile
-} from '../../api/services/clientService'
-
-interface ClientUpdateDto {
-  name: string
-  phone: string
-  address: string
-}
+import { getClientProfile, type ClientResponseDto } from '../../api/services/clientService'
 
 const router = useRouter()
-
 const loading = ref(false)
-const saving = ref(false)
-const successMessage = ref('')
-const errorMessage = ref('')
-const email = ref('')
+const error = ref('')
+const profile = ref<ClientResponseDto | null>(null)
 
-const form = reactive<ClientUpdateDto>({
-  name: '',
-  phone: '',
-  address: ''
+const avatarUrl = computed(() => {
+  if (!profile.value?.email) return null
+  return localStorage.getItem(`avatar_${profile.value.email}`)
 })
+const userInitial = computed(() => profile.value?.name?.charAt(0).toUpperCase() || 'U')
 
 async function loadProfile() {
   try {
     loading.value = true
-    errorMessage.value = ''
-    successMessage.value = ''
-
-    const data = await getClientProfile()
-
-    form.name = data.name ?? ''
-    form.phone = data.phone ?? ''
-    form.address = data.address ?? ''
-    email.value = data.email ?? ''
-  } catch (error) {
-    console.error(error)
-    errorMessage.value = 'Nu am putut încărca profilul.'
+    profile.value = await getClientProfile()
+  } catch {
+    error.value = 'Nu am putut încărca profilul.'
   } finally {
     loading.value = false
   }
 }
 
-async function handleSubmit() {
-  try {
-    errorMessage.value = ''
-    successMessage.value = ''
-
-    if (!form.name.trim()) {
-      errorMessage.value = 'Numele este obligatoriu.'
-      return
-    }
-
-    if (!form.phone.trim()) {
-      errorMessage.value = 'Telefonul este obligatoriu.'
-      return
-    }
-
-    saving.value = true
-
-    await updateClientProfile({
-      name: form.name.trim(),
-      phone: form.phone.trim(),
-      address: form.address.trim()
-    })
-
-    successMessage.value = 'Profilul a fost actualizat cu succes.'
-  } catch (error) {
-    console.error(error)
-    errorMessage.value = 'A apărut o eroare la salvarea profilului.'
-  } finally {
-    saving.value = false
-  }
-}
-
-function goToCreatePet() {
-  router.push({ name: 'client-create-pet' })
-}
-
-onMounted(() => {
-  loadProfile()
-})
+onMounted(() => { loadProfile() })
 </script>
 
 <template>
   <div class="page-wrapper">
-    <div class="profile-card">
-      <div class="page-header">
-        <h1>Profilul meu</h1>
-        <p>Actualizează datele personale ale contului tău.</p>
+    <div v-if="loading" class="info-box">Se încarcă profilul...</div>
+    <div v-else-if="error" class="info-box error">{{ error }}</div>
+
+    <template v-else-if="profile">
+      <div class="profile-hero">
+        <div class="avatar-wrap">
+          <img v-if="avatarUrl" :src="avatarUrl" alt="Avatar" class="avatar-img" />
+          <div v-else class="avatar-placeholder">
+            <span>{{ userInitial }}</span>
+          </div>
+        </div>
+        <div class="hero-text">
+          <h1>{{ profile.name }}</h1>
+          <p class="hero-email">{{ profile.email }}</p>
+          <span class="role-badge">👤 Client</span>
+        </div>
+        <button class="edit-btn" @click="router.push({ name: 'client-profile-edit' })">
+          ✏️ Editează profilul
+        </button>
       </div>
 
-      <div v-if="loading" class="info-box">
-        Se încarcă datele profilului...
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-icon">📞</div>
+          <div>
+            <div class="info-label">Telefon</div>
+            <div class="info-value">{{ profile.phone || '—' }}</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-icon">📧</div>
+          <div>
+            <div class="info-label">Email</div>
+            <div class="info-value">{{ profile.email }}</div>
+          </div>
+        </div>
+        <div class="info-card full">
+          <div class="info-icon">🏠</div>
+          <div>
+            <div class="info-label">Adresă</div>
+            <div class="info-value">{{ profile.address || '—' }}</div>
+          </div>
+        </div>
       </div>
 
-      <form v-else class="profile-form" @submit.prevent="handleSubmit">
-        <div v-if="errorMessage" class="info-box error">
-          {{ errorMessage }}
-        </div>
-
-        <div v-if="successMessage" class="info-box success">
-          {{ successMessage }}
-        </div>
-
-        <div class="form-group">
-          <label for="name">Nume complet</label>
-          <input
-            id="name"
-            v-model="form.name"
-            type="text"
-            placeholder="Introdu numele complet"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input
-            id="email"
-            :value="email"
-            type="email"
-            disabled
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="phone">Telefon</label>
-          <input
-            id="phone"
-            v-model="form.phone"
-            type="text"
-            placeholder="Introdu numărul de telefon"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="address">Adresă</label>
-          <textarea
-            id="address"
-            v-model="form.address"
-            rows="4"
-            placeholder="Introdu adresa"
-          />
-        </div>
-
-        <div class="actions-row">
-          <button type="button" class="secondary-btn" @click="goToCreatePet">
-            Adaugă animal
-          </button>
-
-          <button type="submit" class="primary-btn" :disabled="saving">
-            {{ saving ? 'Se salvează...' : 'Salvează modificările' }}
-          </button>
-        </div>
-      </form>
-    </div>
+      <div class="actions-row">
+        <button class="secondary-btn" @click="router.push({ name: 'client-create-pet' })">
+          🐾 Adaugă animal
+        </button>
+        <button class="secondary-btn" @click="router.push({ name: 'client-pets' })">
+          📋 Animalele mele
+        </button>
+      </div>
+    </template>
   </div>
 </template>
 
 <style scoped>
-.page-wrapper {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 3rem 2rem;
+.page-wrapper { max-width: 860px; margin: 0 auto; padding: 3rem 2rem; display: grid; gap: 20px; }
+
+.profile-hero {
+  background: white; border-radius: 24px; padding: 2rem;
+  box-shadow: 0 14px 32px rgba(0,0,0,0.08);
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
 }
 
-.profile-card {
-  background: white;
-  border-radius: 24px;
-  padding: 2rem;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.08);
-}
+.avatar-wrap { flex-shrink: 0; }
+.avatar-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #fce7f3; box-shadow: 0 8px 20px rgba(190,24,93,0.15); }
+.avatar-placeholder { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #fce7f3, #fbcfe8); border: 4px solid #fce7f3; display: flex; align-items: center; justify-content: center; }
+.avatar-placeholder span { font-size: 2.6rem; font-weight: 800; color: #be185d; }
 
-.page-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
+.hero-text { flex: 1; }
+.hero-text h1 { font-size: 1.7rem; font-weight: 800; color: #1f2937; margin: 0 0 4px; }
+.hero-email { color: #9ca3af; font-size: 0.9rem; margin: 0 0 10px; }
+.role-badge { display: inline-block; background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8; border-radius: 999px; padding: 4px 12px; font-size: 0.8rem; font-weight: 700; }
 
-.page-header h1 {
-  font-size: 2.1rem;
-  font-weight: 800;
-  color: #1f2937;
-  margin-bottom: 0.75rem;
-}
+.edit-btn { margin-left: auto; border: none; border-radius: 14px; padding: 10px 20px; background: linear-gradient(135deg, #be185d, #9d174d); color: white; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 6px 16px rgba(190,24,93,0.25); white-space: nowrap; }
+.edit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(190,24,93,0.3); }
 
-.page-header p {
-  color: #6b7280;
-}
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.info-card { background: white; border-radius: 18px; padding: 18px 20px; display: flex; align-items: flex-start; gap: 14px; border: 1px solid #f3f4f6; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.info-card.full { grid-column: 1 / -1; }
+.info-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+.info-label { font-size: 0.75rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.info-value { font-size: 1rem; color: #1f2937; font-weight: 500; }
 
-.profile-form {
-  display: grid;
-  gap: 1.25rem;
-}
+.actions-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.secondary-btn { flex: 1; border: none; border-radius: 14px; padding: 12px 20px; background: white; border: 1px solid #e5e7eb; color: #374151; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.secondary-btn:hover { border-color: #fbcfe8; color: #be185d; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(190,24,93,0.1); }
 
-.form-group {
-  display: grid;
-  gap: 0.55rem;
-}
+.info-box { border-radius: 16px; padding: 1rem 1.2rem; background: #f9fafb; color: #374151; }
+.info-box.error { background: #fee2e2; color: #b91c1c; }
 
-.form-group label {
-  font-weight: 600;
-  color: #374151;
-}
-
-.form-group input,
-.form-group textarea {
-  border: 1px solid #d1d5db;
-  border-radius: 14px;
-  padding: 0.9rem 1rem;
-  font-size: 1rem;
-  color: #1f2937;
-  background: #fff;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: #ec4899;
-  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.12);
-}
-
-.form-group input:disabled {
-  background: #f3f4f6;
-  color: #6b7280;
-  cursor: not-allowed;
-}
-
-.actions-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-
-.primary-btn,
-.secondary-btn {
-  border: none;
-  border-radius: 14px;
-  padding: 0.9rem 1.2rem;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.primary-btn {
-  background: #ec4899;
-  color: white;
-}
-
-.secondary-btn {
-  background: #f3e8ff;
-  color: #7c3aed;
-}
-
-.primary-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.info-box {
-  border-radius: 16px;
-  padding: 1rem 1.2rem;
-  background: #f9fafb;
-  color: #374151;
-}
-
-.info-box.error {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.info-box.success {
-  background: #dcfce7;
-  color: #166534;
-}
-
-@media (max-width: 768px) {
-  .page-wrapper {
-    padding: 2rem 1rem;
-  }
-
-  .profile-card {
-    padding: 1.5rem;
-  }
-
-  .page-header h1 {
-    font-size: 1.8rem;
-  }
-
-  .actions-row {
-    flex-direction: column-reverse;
-  }
-
-  .primary-btn,
-  .secondary-btn {
-    width: 100%;
-  }
+@media (max-width: 640px) {
+  .profile-hero { flex-direction: column; align-items: flex-start; }
+  .edit-btn { margin-left: 0; width: 100%; }
+  .info-grid { grid-template-columns: 1fr; }
+  .info-card.full { grid-column: 1; }
 }
 </style>

@@ -1,4 +1,24 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { getAllDoctors, type DoctorResponseDto } from '../api/services/doctorService'
+
+const doctors = ref<DoctorResponseDto[]>([])
+
+function getDoctorAvatar(doctor: DoctorResponseDto): string | null {
+  return localStorage.getItem(`avatar_${doctor.email}`) ?? null
+}
+
+function getInitial(name: string): string {
+  return name?.charAt(0).toUpperCase() || 'D'
+}
+
+onMounted(async () => {
+  try {
+    doctors.value = await getAllDoctors()
+  } catch {
+    // fallback silentios
+  }
+})
 </script>
 
 <template>
@@ -201,6 +221,51 @@
               <div>
                 <div class="author-name">Ioana Constantin</div>
                 <div class="author-pet">Proprietara lui Biscuit 🐰</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOCTORI -->
+    <section v-if="doctors.length > 0" class="doctors-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="pill">Echipa noastră</span>
+          <h2>Medicii noștri veterinari</h2>
+          <p>Profesioniști dedicați, cu experiență și pasiune pentru sănătatea animalelor tale.</p>
+        </div>
+        <div class="doctors-grid">
+          <div v-for="doctor in doctors" :key="doctor.id" class="doctor-card">
+            <div class="doctor-avatar-wrap">
+              <img
+                v-if="getDoctorAvatar(doctor)"
+                :src="getDoctorAvatar(doctor)!"
+                :alt="doctor.name"
+                class="doctor-avatar-img"
+              />
+              <div v-else class="doctor-avatar-placeholder">
+                <span>{{ getInitial(doctor.name) }}</span>
+              </div>
+            </div>
+            <div class="doctor-info">
+              <h3>{{ doctor.name }}</h3>
+              <span class="doctor-spec">{{ doctor.specialization || 'Medic veterinar' }}</span>
+              <p v-if="doctor.bio" class="doctor-bio">{{ doctor.bio }}</p>
+              <div class="doctor-details">
+                <div v-if="doctor.email" class="doctor-detail">
+                  <span class="detail-icon">📧</span>
+                  <a :href="`mailto:${doctor.email}`">{{ doctor.email }}</a>
+                </div>
+                <div v-if="doctor.phone" class="doctor-detail">
+                  <span class="detail-icon">📞</span>
+                  <span>{{ doctor.phone }}</span>
+                </div>
+                <div v-if="doctor.schedule" class="doctor-detail">
+                  <span class="detail-icon">🕐</span>
+                  <span>{{ doctor.schedule }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -454,11 +519,56 @@
 .footer-col a:hover { color: #f9a8d4; }
 .footer-bottom { border-top: 1px solid #374151; padding-top: 24px; text-align: center; color: #6b7280; font-size: 0.85rem; }
 
+/* ===== DOCTORS ===== */
+.doctors-section { padding: 90px 0; background: white; }
+.doctors-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+.doctor-card {
+  background: white; border-radius: 24px; padding: 28px;
+  border: 1px solid #f3f4f6; box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  transition: all 0.25s;
+}
+.doctor-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(190,24,93,0.1); border-color: #fbcfe8; }
+
+.doctor-avatar-wrap { margin-bottom: 18px; }
+.doctor-avatar-img {
+  width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
+  border: 4px solid #ede9fe; box-shadow: 0 6px 20px rgba(118,15,92,0.15);
+}
+.doctor-avatar-placeholder {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  border: 4px solid #ede9fe; box-shadow: 0 6px 20px rgba(118,15,92,0.1);
+  display: flex; align-items: center; justify-content: center;
+}
+.doctor-avatar-placeholder span { font-size: 2.4rem; font-weight: 800; color: #760f5c; }
+
+.doctor-info { width: 100%; }
+.doctor-info h3 { font-size: 1.1rem; font-weight: 800; color: #1f2937; margin: 0 0 6px; }
+.doctor-spec {
+  display: inline-block; background: #faf5ff; color: #760f5c;
+  border: 1px solid #ddd6fe; border-radius: 999px;
+  padding: 4px 12px; font-size: 0.78rem; font-weight: 700;
+  margin-bottom: 12px;
+}
+.doctor-bio {
+  font-size: 0.88rem; color: #6b7280; line-height: 1.6;
+  margin: 0 0 14px; display: -webkit-box;
+  -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.doctor-details { display: grid; gap: 8px; text-align: left; }
+.doctor-detail { display: flex; align-items: flex-start; gap: 8px; font-size: 0.84rem; color: #4b5563; }
+.detail-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+.doctor-detail a { color: #be185d; text-decoration: none; font-weight: 500; word-break: break-all; }
+.doctor-detail a:hover { text-decoration: underline; }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
   .services-grid { grid-template-columns: repeat(2, 1fr); }
   .testimonials-grid { grid-template-columns: 1fr; }
   .testimonial-card.featured { transform: scale(1); }
+  .doctors-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
@@ -468,6 +578,7 @@
   .main-card { width: 240px; }
   .mini-card.top { right: 0; }
   .services-grid { grid-template-columns: 1fr; }
+  .doctors-grid { grid-template-columns: 1fr; }
   .steps-grid { flex-direction: column; }
   .step-arrow { transform: rotate(90deg); }
   .step-card { max-width: 100%; }

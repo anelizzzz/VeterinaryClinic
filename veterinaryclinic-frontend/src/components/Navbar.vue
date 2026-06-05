@@ -27,7 +27,9 @@
       </div>
 
       <div class="nav-links">
-        <router-link to="/" class="nav-link">Home</router-link>
+        <router-link :to="authStore.isAuthenticated ? '/dashboard' : '/'" class="nav-link">Home</router-link>
+        <router-link to="/despre-noi" class="nav-link">Despre noi</router-link>
+        <router-link to="/contact" class="nav-link">Contact</router-link>
 
         <template v-if="!authStore.isAuthenticated">
           <router-link to="/login" class="nav-link">Login</router-link>
@@ -65,7 +67,7 @@
                   class="dropdown-item"
                   @click="closeDropdown"
                 >
-                  Editează profilul
+                  Profilul meu
                 </router-link>
 
                 <button

@@ -11,4 +11,8 @@ public class MedicalRecord
     public string Diagnosis { get; set; } = string.Empty;
     public string Treatment { get; set; } = string.Empty;
     public string Observations { get; set; } = string.Empty;
+
+    // Referință opțională la diagnosticul predefinit folosit
+    public int? DiagnosisId { get; set; }
+    public Diagnosis? DiagnosisRef { get; set; }
 }

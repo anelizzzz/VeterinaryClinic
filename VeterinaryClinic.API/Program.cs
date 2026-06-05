@@ -7,7 +7,10 @@ using VeterinaryClinic.API.Data;
 using VeterinaryClinic.API.Repositories.Users;
 using VeterinaryClinic.API.Services;
 using VeterinaryClinic.API.Services.AiDiagnosis;
+using VeterinaryClinic.API.Services.Diagnosis;
 using VeterinaryClinic.API.Services.Doctor;
+using VeterinaryClinic.API.Services.Email;
+using VeterinaryClinic.API.Services.Pdf;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://localhost:5000");
@@ -91,9 +94,12 @@ builder.Services.AddScoped<LabResultService>();
 builder.Services.AddScoped<MedicalRecordService>();
 builder.Services.AddScoped<AdoptionAnimalService>();
 builder.Services.AddScoped<AdoptionRequestService>();
-builder.Services.AddScoped<UserRepository>(); 
+builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddHttpClient<IAIDiagnosisService, AIDiagnosisService>();
+builder.Services.AddScoped<IPdfService, PdfService>();
+builder.Services.AddScoped<DiagnosisService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 var app = builder.Build();
 
 //if (app.Environment.IsDevelopment())
