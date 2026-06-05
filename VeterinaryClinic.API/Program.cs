@@ -106,17 +106,26 @@ builder.Services.AddScoped<DiagnosisService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 var app = builder.Build();
 
-//if (app.Environment.IsDevelopment())
-//{
+// PRIMUL lucru - înainte de orice altceva
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+    context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
+    context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept";
+
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 204;
+        await context.Response.CompleteAsync();
+        return;
+    }
+
+    await next();
+});
+
 app.UseSwagger();
 app.UseSwaggerUI();
-//}
-
-
-
-
 app.UseCors("AllowVueFrontend");
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseStaticFiles();
