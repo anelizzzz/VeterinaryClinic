@@ -29,7 +29,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowVueFrontend", policy =>
+    options.AddDefaultPolicy(policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
@@ -111,8 +111,11 @@ app.UseSwaggerUI();
 //}
 
 
-app.UseCors("AllowVueFrontend");
+//app.UseCors("AllowVueFrontend");
 
+
+app.UseRouting(); // adaug? asta explicit
+app.UseCors();
 if (!app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
