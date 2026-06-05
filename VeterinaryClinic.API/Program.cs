@@ -111,17 +111,15 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 var app = builder.Build();
 
 
-app.UseSwagger();
-app.UseSwaggerUI();
-
 app.UseRouting();
 
 app.UseCors("ProductionCors");
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseStaticFiles();
-
 
 app.MapControllers();
 
