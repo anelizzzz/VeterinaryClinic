@@ -31,11 +31,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("ProductionCors", policy =>
     {
         policy
-            .SetIsOriginAllowed(origin =>
-                origin.EndsWith(".vercel.app"))
-             .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE")
-            .WithHeaders("Content-Type", "Authorization")
-            .AllowCredentials();
+            .WithOrigins("https://veterinary-clinic-red.vercel.app")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 builder.Services.AddSwaggerGen(options =>
