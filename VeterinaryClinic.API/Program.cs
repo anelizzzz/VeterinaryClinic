@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -9,7 +10,6 @@ using VeterinaryClinic.API.Services;
 using VeterinaryClinic.API.Services.AiDiagnosis;
 using VeterinaryClinic.API.Services.Diagnosis;
 using VeterinaryClinic.API.Services.Doctor;
-using VeterinaryClinic.API.Services.Email;
 using VeterinaryClinic.API.Services.Pdf;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +22,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    options.UseNpgsql(connectionString);
+});
 
 builder.Services.AddCors(options =>
 {
@@ -99,7 +102,6 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddHttpClient<IAIDiagnosisService, AIDiagnosisService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<DiagnosisService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
 var app = builder.Build();
 
 //if (app.Environment.IsDevelopment())
