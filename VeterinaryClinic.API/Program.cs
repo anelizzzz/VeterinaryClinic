@@ -129,6 +129,13 @@ app.UseCors("AllowVueFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseStaticFiles();
+app.MapMethods("/api/{**path}", new[] { "OPTIONS" }, (HttpContext context) =>
+{
+    context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+    context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
+    context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+    return Results.Ok();
+});
 app.MapControllers();
 
 app.Run();
