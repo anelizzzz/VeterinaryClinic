@@ -1,17 +1,22 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  // Elimină nevoia de preflight
+  withCredentials: false,
 })
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
-
   if (token) {
     config.headers = config.headers ?? {}
     config.headers.Authorization = `Bearer ${token}`
   }
-
+  // Forțează simple request în loc de preflight
+  delete config.headers['Content-Type']
   return config
 })
 
