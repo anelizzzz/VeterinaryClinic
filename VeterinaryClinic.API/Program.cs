@@ -29,13 +29,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowVueFrontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:5173",
-                "http://localhost:3000",
-                "https://veterinary-clinic-9mxjpmeag-anelizzzs-projects.vercel.app"
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        policy.SetIsOriginAllowed(origin =>
+            origin.StartsWith("http://localhost") ||
+            origin.EndsWith(".vercel.app")
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
     });
 });
 
