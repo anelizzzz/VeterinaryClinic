@@ -111,11 +111,24 @@ app.UseSwaggerUI();
 //}
 
 
-//app.UseCors("AllowVueFrontend");
+// R?spunde explicit la OPTIONS (preflight)
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+    context.Response.Headers.Add("Access-Control-Allow-Headers", "*");
+    context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
 
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 200;
+        await context.Response.CompleteAsync();
+        return;
+    }
 
-app.UseRouting(); // adaug? asta explicit
-app.UseCors();
+    await next();
+});
+
+app.UseCors("AllowVueFrontend");
 if (!app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
