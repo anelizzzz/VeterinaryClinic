@@ -31,11 +31,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowVueFrontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:5173",
-                "https://localhost:5173",
-                "https://veterinary-clinic-red.vercel.app"
-              )
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
