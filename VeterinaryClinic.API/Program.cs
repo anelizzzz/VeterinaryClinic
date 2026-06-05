@@ -111,8 +111,12 @@ app.UseSwaggerUI();
 //}
 
 
-app.UseHttpsRedirection();
 app.UseCors("AllowVueFrontend");
+
+if (!app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseStaticFiles();
