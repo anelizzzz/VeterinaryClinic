@@ -10,8 +10,8 @@ namespace VeterinaryClinic.API.Data
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
-            optionsBuilder.UseSqlServer(
-                "Server=(localdb)\\mssqllocaldb;Database=VeterinaryClinicDb;Trusted_Connection=true;TrustServerCertificate=true;");
+            optionsBuilder.UseNpgsql(
+                "Host=zephyr.proxy.rlwy.net:53438;Port=5432;Database=railway;Username=postgres;Password=aHdkMemiiCikngBruBonvtlkgzrOpBSI");
 
             return new ApplicationDbContext(optionsBuilder.Options);
         }

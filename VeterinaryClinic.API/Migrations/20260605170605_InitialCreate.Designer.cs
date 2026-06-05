@@ -2,9 +2,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VeterinaryClinic.API.Data;
 
 #nullable disable
@@ -12,8 +12,8 @@ using VeterinaryClinic.API.Data;
 namespace VeterinaryClinic.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260315150003_FullModelsV1")]
-    partial class FullModelsV1
+    [Migration("20260605170605_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,50 +21,50 @@ namespace VeterinaryClinic.API.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.25")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("VeterinaryClinic.API.Models.Entities.AdoptionAnimal", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("AddedDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Age")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Breed")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Species")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Vaccines")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -75,25 +75,25 @@ namespace VeterinaryClinic.API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdoptionAnimalId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("ClientId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Motivation")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("RequestDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -108,31 +108,31 @@ namespace VeterinaryClinic.API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ClientId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("DoctorId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Notes")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<int>("PetId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Type")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -149,16 +149,16 @@ namespace VeterinaryClinic.API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -167,28 +167,153 @@ namespace VeterinaryClinic.API.Migrations
                     b.ToTable("Clients");
                 });
 
+            modelBuilder.Entity("VeterinaryClinic.API.Models.Entities.Diagnosis", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Observations")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Species")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Treatment")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Diagnoses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Inflamație a urechii externe",
+                            Name = "Otită externă",
+                            Observations = "Monitorizare săptămânală. Evitați intrarea apei în urechi.",
+                            Species = "Câine",
+                            Treatment = "Curățare auriculară cu soluție antiseptică. Picături auriculare cu antibiotic și antiinflamator (ex: Otomax) timp de 7-10 zile."
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Reacție alergică cutanată",
+                            Name = "Dermatită alergică",
+                            Observations = "Identificați și eliminați alergenul. Dietă hipoalergenică recomandată.",
+                            Species = "",
+                            Treatment = "Antihistaminice (Cetirizină 5mg/zi). Șampoane hipoalergenice. Corticosteroizi în cazuri severe (Prednisolon 0.5mg/kg/zi, 5 zile)."
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Inflamație a tractului gastrointestinal",
+                            Name = "Gastroenterită",
+                            Observations = "Monitorizați hidratarea. Dacă vărsăturile persistă peste 24h, repetați consultul.",
+                            Species = "",
+                            Treatment = "Dietă blândă 48-72h (orez fiert + pui fiert fără sare). Hidratare corespunzătoare. Probiotice (Fortiflora 1 plic/zi, 7 zile). Metronidazol 15mg/kg de 2 ori pe zi, 5 zile dacă este necesar."
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Infecție bacteriană a tractului urinar",
+                            Name = "Infecție urinară",
+                            Observations = "Recoltați urocultură dacă infecțiile sunt recurente. Reevaluare la 2 săptămâni.",
+                            Species = "",
+                            Treatment = "Amoxicilină-clavulanat 15mg/kg de 2 ori pe zi, 10-14 zile. Creșteți aportul de apă. Urocolvin sau alt supliment urinar."
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "Inflamație a conjunctivei oculare",
+                            Name = "Conjunctivită",
+                            Observations = "Evitați expunerea la vânt și praf. Dacă nu se ameliorează în 5 zile, consultați un oftalmolog veterinar.",
+                            Species = "",
+                            Treatment = "Curățarea ochilor cu ser fiziologic steril. Picături oftalmice cu antibiotic (Tobramicină sau Cloramfenicol) de 3 ori pe zi, 7 zile."
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Description = "Infestare cu paraziți intestinali",
+                            Name = "Parazitoză intestinală",
+                            Observations = "Igienizarea mediului. Deparazitare și la alți animale de companie din gospodărie.",
+                            Species = "",
+                            Treatment = "Fenbendazol 50mg/kg/zi, 3-5 zile sau Pyrantel 5mg/kg doză unică. Deparazitare internă periodică la 3-6 luni."
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Description = "Insuficiență a reglării glicemice",
+                            Name = "Diabet zaharat",
+                            Observations = "Educarea proprietarului privind semnele de hipoglicemie. Control lunar.",
+                            Species = "",
+                            Treatment = "Insulină (dozaj individualizat în funcție de glicemie). Dietă cu conținut redus de carbohidrați. Monitorizare glicemie zilnică."
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Description = "Producție insuficientă de hormoni tiroidieni",
+                            Name = "Hipotiroidism",
+                            Observations = "Tratament pe viață. Control tiroidian la 6 luni.",
+                            Species = "Câine",
+                            Treatment = "Levotiroxină sodică 0.02mg/kg de 2 ori pe zi. Ajustarea dozei după 4-6 săptămâni în funcție de TSH."
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Description = "Inflamație a mucoasei bucale",
+                            Name = "Stomatită",
+                            Observations = "Periaj dentar regulat. Dietă cu hrană umedă în perioada de recuperare.",
+                            Species = "",
+                            Treatment = "Curățare dentară profesională sub anestezie. Antibiotice (Clindamicină 5mg/kg de 2 ori pe zi, 10 zile). Gel oral antiseptic local."
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Description = "Inflamație articulară degenerativă",
+                            Name = "Artrită",
+                            Observations = "Evitați efortul fizic intens. Suprafețe moi pentru odihnă. Monitorizare renală la tratament lung cu AINS.",
+                            Species = "",
+                            Treatment = "Meloxicam 0.1mg/kg/zi cu mâncare. Suplimente condroprotectoare (Glucozamină + Condroitin). Fizioterapie recomandată."
+                        });
+                });
+
             modelBuilder.Entity("VeterinaryClinic.API.Models.Entities.Doctor", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Bio")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Schedule")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Specialization")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -201,30 +326,30 @@ namespace VeterinaryClinic.API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FilePath")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Interpretation")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("KeyValues")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<int>("PetId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("TestType")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -237,32 +362,37 @@ namespace VeterinaryClinic.API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Diagnosis")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
+
+                    b.Property<int?>("DiagnosisId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("DoctorId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Observations")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<int>("PetId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Treatment")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DiagnosisId");
 
                     b.HasIndex("DoctorId");
 
@@ -275,38 +405,38 @@ namespace VeterinaryClinic.API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Birthdate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Breed")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<int>("ClientId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Species")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Vaccines")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -319,32 +449,32 @@ namespace VeterinaryClinic.API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<int>("Role")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasDefaultValue(0);
 
                     b.HasKey("Id");
@@ -436,6 +566,11 @@ namespace VeterinaryClinic.API.Migrations
 
             modelBuilder.Entity("VeterinaryClinic.API.Models.Entities.MedicalRecord", b =>
                 {
+                    b.HasOne("VeterinaryClinic.API.Models.Entities.Diagnosis", "DiagnosisRef")
+                        .WithMany("MedicalRecords")
+                        .HasForeignKey("DiagnosisId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("VeterinaryClinic.API.Models.Entities.Doctor", "Doctor")
                         .WithMany("MedicalRecords")
                         .HasForeignKey("DoctorId")
@@ -447,6 +582,8 @@ namespace VeterinaryClinic.API.Migrations
                         .HasForeignKey("PetId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("DiagnosisRef");
 
                     b.Navigation("Doctor");
 
@@ -476,6 +613,11 @@ namespace VeterinaryClinic.API.Migrations
                     b.Navigation("Appointments");
 
                     b.Navigation("Pets");
+                });
+
+            modelBuilder.Entity("VeterinaryClinic.API.Models.Entities.Diagnosis", b =>
+                {
+                    b.Navigation("MedicalRecords");
                 });
 
             modelBuilder.Entity("VeterinaryClinic.API.Models.Entities.Doctor", b =>
