@@ -28,17 +28,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowVueFrontend", policy =>
+    options.AddPolicy("ProductionCors", policy =>
     {
-        policy.SetIsOriginAllowed(origin =>
-            origin.StartsWith("http://localhost") ||
-            origin.EndsWith(".vercel.app")
-        )
-        .AllowAnyHeader()
-        .AllowAnyMethod();
+        policy
+            .SetIsOriginAllowed(origin =>
+                origin.EndsWith(".vercel.app"))
+             .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE")
+            .WithHeaders("Content-Type", "Authorization")
+            .AllowCredentials();
     });
 });
-
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
