@@ -30,7 +30,6 @@ namespace VeterinaryClinic.API.Services
             var existing = await _userRepository.GetByEmailAsync(dto.Email);
             if (existing is not null) return null;
 
-            // Adminii se creează direct aprobați
             var isAdmin = dto.Role == UserRole.Admin;
 
             var user = new User
@@ -47,16 +46,20 @@ namespace VeterinaryClinic.API.Services
 
             await _unitOfWork.Users.AddAsync(user);
 
+            // BUG FIX: SaveChangesAsync înainte de a folosi user.Id
+            // Fără asta, user.Id era 0 când era trimis în emailul adminului
+            await _unitOfWork.SaveChangesAsync();
+
             if (!isAdmin)
             {
-                // Trimite email utilizatorului — cont în așteptare
+                // Email utilizator — cont în așteptare
                 await _emailService.SendAccountPendingAsync(
                     toEmail: dto.Email,
                     userName: dto.Name,
                     role: dto.Role == UserRole.Doctor ? "doctor" : "client"
                 );
 
-                // Trimite email adminului cu cererea
+                // Email admin cu cererea (acum user.Id e corect populat de EF)
                 var adminEmail = _configuration["Email:AdminEmail"] ?? _configuration["Email:FromEmail"] ?? "";
                 if (!string.IsNullOrWhiteSpace(adminEmail))
                 {
@@ -69,7 +72,6 @@ namespace VeterinaryClinic.API.Services
                     );
                 }
 
-                // Returnăm răspuns special — cont în așteptare
                 return new AuthResponseDto
                 {
                     Token = string.Empty,
@@ -80,7 +82,7 @@ namespace VeterinaryClinic.API.Services
                 };
             }
 
-            // Admin — creat direct
+            // Admin — creat direct aprobat
             return new AuthResponseDto
             {
                 Token = GenerateToken(user),
@@ -99,7 +101,6 @@ namespace VeterinaryClinic.API.Services
             var isValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.Password);
             if (!isValid) return null;
 
-            // Verificăm dacă contul e aprobat
             if (!user.IsApproved)
             {
                 if (user.IsRejected)
@@ -143,7 +144,6 @@ namespace VeterinaryClinic.API.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-
         }
     }
 }
