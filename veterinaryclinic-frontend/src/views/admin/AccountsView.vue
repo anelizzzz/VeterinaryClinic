@@ -201,9 +201,12 @@ const loadData = async (): Promise<void> => {
       getAllClients()
     ])
 
-    users.value = usersData.filter((u: UserAccountDto) => u.isApproved === true)
-    doctors.value = doctorsData
-    clients.value = clientsData
+    const approvedUsers = usersData.filter((u: UserAccountDto) => u.isApproved === true)
+    const approvedUserIds = new Set(approvedUsers.map((u: UserAccountDto) => u.id))
+
+    users.value = approvedUsers
+    doctors.value = doctorsData.filter((d: DoctorResponseDto) => approvedUserIds.has(d.id))
+    clients.value = clientsData.filter((c: ClientResponseDto) => approvedUserIds.has(c.id))
   } catch (err: any) {
     console.error(err)
     error.value = 'Nu s-au putut încărca datele.'

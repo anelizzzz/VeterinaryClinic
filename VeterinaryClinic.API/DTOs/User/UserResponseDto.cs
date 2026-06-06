@@ -10,5 +10,7 @@ namespace VeterinaryClinic.API.DTOs.User
         public string Phone { get; set; } = string.Empty;
         public UserRole Role { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool IsApproved { get; set; }
+        public bool IsRejected { get; set; }
     }
 }

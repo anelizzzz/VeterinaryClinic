@@ -21,7 +21,9 @@ namespace VeterinaryClinic.API.Services
                 Email = u.Email,
                 Phone = u.Phone,
                 Role = u.Role,
-                CreatedAt = u.CreatedAt
+                CreatedAt = u.CreatedAt,
+                IsApproved = u.IsApproved,
+                IsRejected = u.IsRejected
             });
         }
 
@@ -37,7 +39,9 @@ namespace VeterinaryClinic.API.Services
                 Email = user.Email,
                 Phone = user.Phone,
                 Role = user.Role,
-                CreatedAt = user.CreatedAt
+                CreatedAt = user.CreatedAt,
+                IsApproved = user.IsApproved,
+                IsRejected = user.IsRejected
             };
         }
 
@@ -58,7 +62,9 @@ namespace VeterinaryClinic.API.Services
                 Email = user.Email,
                 Phone = user.Phone,
                 Role = user.Role,
-                CreatedAt = user.CreatedAt
+                CreatedAt = user.CreatedAt,
+                IsApproved = user.IsApproved,
+                IsRejected = user.IsRejected
             };
         }
 
