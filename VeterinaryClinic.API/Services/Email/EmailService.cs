@@ -327,6 +327,7 @@ namespace VeterinaryClinic.API.Services.Email
   </table>
 </body></html>";
             await SendEmailAsync(toEmail, userName, subject, body, cancellationToken);
+        
         }
     }
 }
