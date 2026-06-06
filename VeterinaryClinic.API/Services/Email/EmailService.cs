@@ -190,7 +190,8 @@ namespace VeterinaryClinic.API.Services.Email
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Eroare la trimiterea emailului la {Email}", toEmail);
+                _logger.LogError(ex, "EMAIL ERROR la {Email}: {Message}", toEmail, ex.Message);
+                throw;
             }
         }
 
