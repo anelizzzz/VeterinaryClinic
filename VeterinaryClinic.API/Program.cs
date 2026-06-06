@@ -105,6 +105,7 @@ builder.Services.AddScoped<AdoptionRequestService>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddHttpClient<IAIDiagnosisService, AIDiagnosisService>();
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<DiagnosisService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
