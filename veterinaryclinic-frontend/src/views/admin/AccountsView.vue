@@ -201,7 +201,7 @@ const loadData = async (): Promise<void> => {
       getAllClients()
     ])
 
-    users.value = usersData
+    users.value = usersData.filter((u: UserAccountDto) => u.isApproved === true)
     doctors.value = doctorsData
     clients.value = clientsData
   } catch (err: any) {

@@ -6,6 +6,8 @@ export interface UserAccountDto {
   email: string
   phone: string
   role: number
+  isApproved: boolean
+  isRejected: boolean
 }
 export interface UserUpdateDto {
   name: string
