@@ -18,6 +18,8 @@ namespace VeterinaryClinic.API.Services.Doctor
             return doctors.Select(d => new DoctorResponseDto
             {
                 Id = d.Id,
+                UserId = d.UserId,
+                IsApproved = d.User?.IsApproved ?? false,
                 Specialization = d.Specialization,
                 Bio = d.Bio,
                 Schedule = d.Schedule,

@@ -17,6 +17,8 @@ namespace VeterinaryClinic.API.Services
             return clients.Select(c => new ClientResponseDto
             {
                 Id = c.Id,
+                UserId = c.UserId,
+                IsApproved = c.User?.IsApproved ?? false,
                 Address = c.Address,
                 Name = c.User?.Name ?? string.Empty,
                 Email = c.User?.Email ?? string.Empty,
@@ -88,6 +90,6 @@ namespace VeterinaryClinic.API.Services
             await _unitOfWork.Clients.DeleteAsync(id);
             return true;
         }
-        
+
     }
 }

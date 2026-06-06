@@ -1,6 +1,8 @@
 import api from '../axios'
 
 export interface ClientResponseDto {
+  userId: number
+  isApproved: boolean
   id: number
   address: string
   name: string

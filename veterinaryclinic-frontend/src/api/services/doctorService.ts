@@ -1,6 +1,8 @@
 import api from '../axios'
 
 export interface DoctorResponseDto {
+  userId: number
+  isApproved: boolean
   id: number
   specialization: string
   bio: string
