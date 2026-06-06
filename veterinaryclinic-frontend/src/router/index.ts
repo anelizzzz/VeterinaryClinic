@@ -74,7 +74,12 @@ const routes = [
     component: () => import('../views/admin/AdoptionRequestsView.vue'),
     meta: { requiresAuth: true, role: UserRole.Admin }
   },
-
+  {
+  path: '/admin/account-requests',
+  name: 'admin-account-requests',
+  component: () => import('../views/admin/AdminAccountRequestsView.vue'),
+  meta: { requiresAuth: true, role: UserRole.Admin }
+  },
   // DOCTOR
   {
     path: '/doctor/patients',
