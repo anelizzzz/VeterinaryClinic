@@ -219,9 +219,7 @@ namespace VeterinaryClinic.API.Services.Email
 
                 using var client = new SmtpClient();
 
-                // BUG FIX (potential Railway): dacă portul 587/StartTls nu merge pe Railway,
-                // schimbă în: ConnectAsync(smtpHost, 465, SecureSocketOptions.SslOnConnect, ...)
-                await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls, cancellationToken);
+                await client.ConnectAsync(smtpHost, 465, SecureSocketOptions.SslOnConnect, cancellationToken);
                 await client.AuthenticateAsync(smtpUser, smtpPass, cancellationToken);
                 await client.SendAsync(message, cancellationToken);
                 await client.DisconnectAsync(true, cancellationToken);
