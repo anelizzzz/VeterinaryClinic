@@ -6,6 +6,7 @@ using VeterinaryClinic.API.DTOs.Auth;
 using VeterinaryClinic.API.Models.Entities;
 using VeterinaryClinic.API.Models.Entities.Enums;
 using VeterinaryClinic.API.Repositories.Users;
+using VeterinaryClinic.API.Services.Email;
 
 namespace VeterinaryClinic.API.Services
 {
@@ -14,18 +15,23 @@ namespace VeterinaryClinic.API.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserRepository _userRepository;
         private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
 
-        public AuthService(IUnitOfWork unitOfWork, UserRepository userRepository, IConfiguration configuration)
+        public AuthService(IUnitOfWork unitOfWork, UserRepository userRepository, IConfiguration configuration, IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _userRepository = userRepository;
             _configuration = configuration;
+            _emailService = emailService;
         }
 
         public async Task<AuthResponseDto?> RegisterAsync(RegisterDto dto)
         {
             var existing = await _userRepository.GetByEmailAsync(dto.Email);
             if (existing is not null) return null;
+
+            // Adminii se creează direct aprobați
+            var isAdmin = dto.Role == UserRole.Admin;
 
             var user = new User
             {
@@ -34,38 +40,54 @@ namespace VeterinaryClinic.API.Services
                 Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 Phone = dto.Phone,
                 Role = dto.Role,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                IsApproved = isAdmin,
+                IsRejected = false
             };
 
             await _unitOfWork.Users.AddAsync(user);
 
-            if (dto.Role == UserRole.Client)
+            if (!isAdmin)
             {
-                var client = new Client
+                // Trimite email utilizatorului — cont în așteptare
+                await _emailService.SendAccountPendingAsync(
+                    toEmail: dto.Email,
+                    userName: dto.Name,
+                    role: dto.Role == UserRole.Doctor ? "doctor" : "client"
+                );
+
+                // Trimite email adminului cu cererea
+                var adminEmail = _configuration["Email:AdminEmail"] ?? _configuration["Email:FromEmail"] ?? "";
+                if (!string.IsNullOrWhiteSpace(adminEmail))
                 {
-                    UserId = user.Id,
-                    Address = string.Empty
-                };
-                await _unitOfWork.Clients.AddAsync(client);
-            }
-            else if (dto.Role == UserRole.Doctor)
-            {
-                var doctor = new VeterinaryClinic.API.Models.Entities.Doctor
+                    await _emailService.SendNewAccountRequestToAdminAsync(
+                        adminEmail: adminEmail,
+                        userName: dto.Name,
+                        userEmail: dto.Email,
+                        role: dto.Role == UserRole.Doctor ? "Doctor" : "Client",
+                        userId: user.Id
+                    );
+                }
+
+                // Returnăm răspuns special — cont în așteptare
+                return new AuthResponseDto
                 {
-                    UserId = user.Id,
-                    Specialization =  string.Empty,
-                    Bio =  string.Empty,
-                    Schedule = "[]"
+                    Token = string.Empty,
+                    Name = user.Name,
+                    Email = user.Email,
+                    Role = user.Role,
+                    IsPending = true
                 };
-                await _unitOfWork.Doctors.AddAsync(doctor);
             }
 
+            // Admin — creat direct
             return new AuthResponseDto
             {
                 Token = GenerateToken(user),
                 Name = user.Name,
                 Email = user.Email,
-                Role = user.Role
+                Role = user.Role,
+                IsPending = false
             };
         }
 
@@ -77,12 +99,22 @@ namespace VeterinaryClinic.API.Services
             var isValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.Password);
             if (!isValid) return null;
 
+            // Verificăm dacă contul e aprobat
+            if (!user.IsApproved)
+            {
+                if (user.IsRejected)
+                    return new AuthResponseDto { Token = string.Empty, IsPending = false, IsRejected = true };
+
+                return new AuthResponseDto { Token = string.Empty, IsPending = true };
+            }
+
             return new AuthResponseDto
             {
                 Token = GenerateToken(user),
                 Name = user.Name,
                 Email = user.Email,
-                Role = user.Role
+                Role = user.Role,
+                IsPending = false
             };
         }
 
