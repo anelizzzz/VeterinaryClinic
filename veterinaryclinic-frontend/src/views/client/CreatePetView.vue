@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { createPet } from '../../api/services/petService'
 import { getClientProfile } from '../../api/services/clientService'
+
 interface PetCreateForm {
   name: string
   species: string
@@ -51,7 +52,7 @@ async function handleSubmit() {
 
     const client = await getClientProfile()
 
-  await createPet({
+    await createPet({
     name: form.name.trim(),
     species: form.species.trim(),
     breed: form.breed.trim(),
