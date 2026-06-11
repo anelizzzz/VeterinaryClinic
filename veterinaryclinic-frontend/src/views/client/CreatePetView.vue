@@ -2,7 +2,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { createPet } from '../../api/services/petService'
-
+import { getClientProfile } from '../../api/services/clientService'
 interface PetCreateForm {
   name: string
   species: string
@@ -49,15 +49,17 @@ async function handleSubmit() {
 
     saving.value = true
 
-    await createPet({
-      name: form.name.trim(),
-      species: form.species.trim(),
-      breed: form.breed.trim(),
-      birthdate: form.birthdate || null,
-      vaccines: form.vaccines.trim(),
-      imageUrl: form.imageUrl.trim()
-    })
+    const client = await getClientProfile()
 
+  await createPet({
+    name: form.name.trim(),
+    species: form.species.trim(),
+    breed: form.breed.trim(),
+    birthdate: form.birthdate || null,
+    vaccines: form.vaccines.trim(),
+    imageUrl: form.imageUrl.trim(),
+    clientId: client.id
+  })
     successMessage.value = 'Animalul a fost adăugat cu succes.'
 
     setTimeout(() => {
