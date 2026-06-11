@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -11,6 +12,9 @@ using VeterinaryClinic.API.Services.Diagnosis;
 using VeterinaryClinic.API.Services.Doctor;
 using VeterinaryClinic.API.Services.Email;
 using VeterinaryClinic.API.Services.Pdf;
+
+// Fix pentru PostgreSQL DateTime timezone
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +38,7 @@ builder.Services.AddCors(options =>
             .WithOrigins(
                 "http://localhost:5173",
                 "https://veterinary-clinic-red.vercel.app"
-           
+
             )
             .AllowAnyHeader()
             .AllowAnyMethod();

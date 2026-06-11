@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { createPet } from '../../api/services/petService'
 import { getClientProfile } from '../../api/services/clientService'
@@ -16,6 +16,7 @@ interface PetCreateForm {
 const router = useRouter()
 
 const saving = ref(false)
+const clientId = ref<number | null>(null)
 const successMessage = ref('')
 const errorMessage = ref('')
 
@@ -27,6 +28,16 @@ const form = reactive<PetCreateForm>({
   vaccines: '',
   imageUrl: ''
 })
+
+async function loadClientId() {
+  try {
+    const profile = await getClientProfile()
+    clientId.value = profile.id
+  } catch (err) {
+    console.error('Could not load client profile', err)
+    errorMessage.value = 'Nu am putut încărca profilul de client.'
+  }
+}
 
 async function handleSubmit() {
   try {
@@ -50,17 +61,16 @@ async function handleSubmit() {
 
     saving.value = true
 
-    const client = await getClientProfile()
-
     await createPet({
-    name: form.name.trim(),
-    species: form.species.trim(),
-    breed: form.breed.trim(),
-    birthdate: form.birthdate,
-    vaccines: form.vaccines.trim(),
-    imageUrl: form.imageUrl.trim(),
-    clientId: client.id
-  })
+      name: form.name.trim(),
+      species: form.species.trim(),
+      breed: form.breed.trim(),
+      birthdate: form.birthdate || null,
+      vaccines: form.vaccines.trim(),
+      imageUrl: form.imageUrl.trim(),
+      clientId: clientId.value ?? undefined
+    })
+
     successMessage.value = 'Animalul a fost adăugat cu succes.'
 
     setTimeout(() => {
@@ -73,6 +83,8 @@ async function handleSubmit() {
     saving.value = false
   }
 }
+
+onMounted(() => { loadClientId() })
 
 function goBack() {
   router.push({ name: 'client-profile' })
