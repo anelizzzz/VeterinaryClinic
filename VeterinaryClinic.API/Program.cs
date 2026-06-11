@@ -12,6 +12,7 @@ using VeterinaryClinic.API.Services.Diagnosis;
 using VeterinaryClinic.API.Services.Doctor;
 using VeterinaryClinic.API.Services.Email;
 using VeterinaryClinic.API.Services.Pdf;
+using CloudinaryDotNet;
 
 // Fix pentru PostgreSQL DateTime timezone
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -114,6 +115,15 @@ builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<DiagnosisService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+var cloudinaryConfig = builder.Configuration.GetSection("Cloudinary");
+
+var account = new Account(
+    cloudinaryConfig["CloudName"],
+    cloudinaryConfig["ApiKey"],
+    cloudinaryConfig["ApiSecret"]
+);
+
+builder.Services.AddSingleton(new Cloudinary(account));
 var app = builder.Build();
 
 

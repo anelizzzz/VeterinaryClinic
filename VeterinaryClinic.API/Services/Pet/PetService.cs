@@ -1,7 +1,8 @@
 ﻿using VeterinaryClinic.API.Dtos.Pet;
 using VeterinaryClinic.API.Models.Entities;
 using VeterinaryClinic.API.Models.Entities.Enums;
-
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 namespace VeterinaryClinic.API.Services
 {
     public class PetService
@@ -9,10 +10,13 @@ namespace VeterinaryClinic.API.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWebHostEnvironment _environment;
 
-        public PetService(IUnitOfWork unitOfWork, IWebHostEnvironment environment)
+        private readonly Cloudinary _cloudinary;
+
+        public PetService(IUnitOfWork unitOfWork, IWebHostEnvironment environment, Cloudinary cloudinary)
         {
             _unitOfWork = unitOfWork;
             _environment = environment;
+            _cloudinary = cloudinary;
         }
 
         public async Task<IEnumerable<PetResponseDto>> GetAllAsync()
@@ -152,35 +156,23 @@ namespace VeterinaryClinic.API.Services
             if (!allowedExtensions.Contains(extension))
                 throw new ArgumentException("Formatul fișierului nu este permis.");
 
-            var webRoot = _environment.WebRootPath
-            ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
-            var uploadsFolder = Path.Combine(webRoot, "uploads", "pets");
+            await using var stream = file.OpenReadStream();
 
-            if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder);
-
-            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            var uploadParams = new ImageUploadParams
             {
-                await file.CopyToAsync(stream);
-            }
+                File = new FileDescription(file.FileName, stream),
+                Folder = "veterinary-clinic/pets"
+            };
 
-            if (!string.IsNullOrWhiteSpace(pet.ImageUrl))
-            {
-                var oldRelativePath = pet.ImageUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString());
-                var oldFullPath = Path.Combine(_environment.WebRootPath, oldRelativePath);
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
-                if (File.Exists(oldFullPath))
-                {
-                    File.Delete(oldFullPath);
-                }
-            }
+            if (uploadResult.Error != null)
+                throw new Exception(uploadResult.Error.Message);
 
-            pet.ImageUrl = $"/uploads/pets/{uniqueFileName}";
+            pet.ImageUrl = uploadResult.SecureUrl.ToString();
 
             await _unitOfWork.SaveChangesAsync();
+
             return true;
         }
     }
