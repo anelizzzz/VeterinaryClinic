@@ -56,7 +56,7 @@ async function handleSubmit() {
     name: form.name.trim(),
     species: form.species.trim(),
     breed: form.breed.trim(),
-    birthdate: form.birthdate || null,
+    birthdate: form.birthdate,
     vaccines: form.vaccines.trim(),
     imageUrl: form.imageUrl.trim(),
     clientId: client.id

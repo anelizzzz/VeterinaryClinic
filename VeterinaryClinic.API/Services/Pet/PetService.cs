@@ -97,7 +97,7 @@ namespace VeterinaryClinic.API.Services
                 Status = pet.Status,
                 Vaccines = pet.Vaccines,
                 ImageUrl = pet.ImageUrl,
-                ClientName = pet.Client?.User.Name ?? string.Empty
+                ClientName = string.Empty
             };
         }
 
