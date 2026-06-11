@@ -20,7 +20,17 @@ const uploadingPetId = ref<number | null>(null)
 const fileInputs = ref<Record<number, HTMLInputElement | null>>({})
 
 const hasPets = computed(() => pets.value.length > 0)
+const API_URL = import.meta.env.VITE_API_BASE_URL
 
+function getPetImage(imageUrl?: string | null) {
+  if (!imageUrl) return ''
+
+  if (imageUrl.startsWith('http')) {
+    return imageUrl
+  }
+
+  return `${API_URL}${imageUrl}`
+}
 function formatDate(dateString?: string | null) {
   if (!dateString) return '-'
   return new Date(dateString).toLocaleDateString('ro-RO')
@@ -214,7 +224,7 @@ onBeforeUnmount(() => {
 
           <img
             v-if="pet.imageUrl"
-            :src="pet.imageUrl"
+            :src="getPetImage(pet.imageUrl)"
             :alt="pet.name"
             class="pet-image"
           />
