@@ -149,6 +149,9 @@ onBeforeUnmount(() => {
     <div class="page-header">
       <h1>Animalele mele</h1>
       <p>Vezi toate animalele asociate contului tău.</p>
+      <button class="add-pet-btn" @click="router.push({ name: 'client-create-pet' })">
+        + Adaugă animal
+      </button>
     </div>
 
     <div v-if="loading" class="info-box">
@@ -164,8 +167,12 @@ onBeforeUnmount(() => {
         {{ successMessage }}
       </div>
 
-      <div v-if="!hasPets" class="info-box">
-        Nu ai animale înregistrate momentan.
+      <div v-if="!hasPets" class="info-box empty-box">
+        <div class="empty-icon">🐾</div>
+        <p>Nu ai animale înregistrate momentan.</p>
+        <button class="add-pet-btn" @click="router.push({ name: 'client-create-pet' })">
+          + Adaugă primul tău animal
+        </button>
       </div>
 
       <div v-else class="pet-grid">
@@ -484,6 +491,19 @@ onBeforeUnmount(() => {
   transform: none;
   box-shadow: none;
 }
+
+.add-pet-btn {
+  border: none; border-radius: 14px; padding: 12px 24px;
+  background: linear-gradient(135deg, #be185d, #9d174d);
+  color: white; font-weight: 700; font-size: 1rem;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 6px 16px rgba(190,24,93,0.25);
+  margin-top: 12px;
+}
+.add-pet-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(190,24,93,0.3); }
+
+.empty-box { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.empty-icon { font-size: 3rem; }
 
 @media (max-width: 768px) {
   .pet-actions {
