@@ -93,7 +93,7 @@ namespace VeterinaryClinic.API.Services
                 Name = pet.Name,
                 Species = pet.Species,
                 Breed = pet.Breed,
-                Birthdate = pet.Birthdate,
+                Birthdate = DateTime.SpecifyKind(dto.Birthdate, DateTimeKind.Utc),
                 Status = pet.Status,
                 Vaccines = pet.Vaccines,
                 ImageUrl = pet.ImageUrl,
@@ -109,7 +109,7 @@ namespace VeterinaryClinic.API.Services
             pet.Name = dto.Name;
             pet.Species = dto.Species;
             pet.Breed = dto.Breed;
-            pet.Birthdate = dto.Birthdate;
+            pet.Birthdate = DateTime.SpecifyKind(dto.Birthdate, DateTimeKind.Utc);
             pet.Vaccines = dto.Vaccines;
             pet.ImageUrl = dto.ImageUrl;
 
