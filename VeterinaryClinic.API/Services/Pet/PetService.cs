@@ -152,7 +152,9 @@ namespace VeterinaryClinic.API.Services
             if (!allowedExtensions.Contains(extension))
                 throw new ArgumentException("Formatul fișierului nu este permis.");
 
-            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "pets");
+            var webRoot = _environment.WebRootPath
+            ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
+            var uploadsFolder = Path.Combine(webRoot, "uploads", "pets");
 
             if (!Directory.Exists(uploadsFolder))
                 Directory.CreateDirectory(uploadsFolder);
