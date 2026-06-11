@@ -51,7 +51,6 @@ namespace VeterinaryClinic.API.Services.AiDiagnosis
             Răspunde DOAR cu un obiect JSON cu câmpurile: possibleCauses (array de string-uri), urgencyLevel (Scăzut/Mediu/Ridicat/Critic), recommendedNextSteps (string), confidence (număr 0-1), disclaimer (string).
             """;
 
-            // Folosim Chat Completions API (/v1/chat/completions)
             var request = new
             {
                 model,

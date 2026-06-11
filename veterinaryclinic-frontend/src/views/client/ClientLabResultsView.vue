@@ -2,17 +2,13 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { getLabResultsByPetId, type LabResultResponseDto, TestType } from '../../api/services/labResultService'
-import { generateAiDiagnosis, type AIDiagnosisResponseDto } from '../../api/services/aiDiagnosisService'
+
 import api from '../../api/axios'
 
 const route = useRoute()
 const loading = ref(false)
 const error = ref('')
 const results = ref<LabResultResponseDto[]>([])
-const aiLoading = ref(false)
-const aiError = ref('')
-const aiResult = ref<AIDiagnosisResponseDto | null>(null)
-const showAiModal = ref(false)
 const downloadingId = ref<number | null>(null)
 const petId = computed(() => Number(route.params.petId))
 
@@ -31,20 +27,8 @@ function getTestTypeText(testType: number) {
   }
 }
 
-function formatConfidence(value: number): string {
-  const pct = value <= 1 ? Math.round(value * 100) : Math.round(value)
-  return `${pct}%`
-}
 
-function urgencyClass(level: string): string {
-  const l = level?.toLowerCase() ?? ''
-  if (l.includes('critic')) return 'urgency-critical'
-  if (l.includes('ridicat')) return 'urgency-high'
-  if (l.includes('mediu')) return 'urgency-medium'
-  return 'urgency-low'
-}
 
-function closeAiModal() { showAiModal.value = false }
 
 async function downloadPdf(result: LabResultResponseDto) {
   try {
@@ -64,38 +48,6 @@ async function downloadPdf(result: LabResultResponseDto) {
   }
 }
 
-async function handleGenerateAiDiagnosis(result: LabResultResponseDto) {
-  try {
-    aiLoading.value = true
-    aiError.value = ''
-    aiResult.value = null
-    showAiModal.value = true
-
-    // Construim context complet pentru AI
-    const labResults: string[] = []
-    if (result.keyValues && result.keyValues !== '{}') labResults.push(`Valori cheie: ${result.keyValues}`)
-    if (result.interpretation) labResults.push(`Interpretare medic: ${result.interpretation}`)
-    labResults.push(`Tip test: ${getTestTypeText(result.testType)}`)
-    labResults.push(`Data analizei: ${formatDate(result.date)}`)
-    if (result.vaccines) labResults.push(`Vaccinuri: ${result.vaccines}`)
-
-    aiResult.value = await generateAiDiagnosis({
-      petName: result.petName || 'Necunoscut',
-      species: result.species || '',
-      breed: result.breed || '',
-      age: result.ageYears || 0,
-      diagnosis: result.interpretation || '',
-      treatment: '',
-      observations: '',
-      labResults
-    })
-  } catch (err) {
-    console.error(err)
-    aiError.value = 'Nu am putut genera diagnosticul AI. Verifică conexiunea și încearcă din nou.'
-  } finally {
-    aiLoading.value = false
-  }
-}
 
 async function loadResults() {
   try {
@@ -152,56 +104,11 @@ onMounted(() => { loadResults() })
             <button class="pdf-btn" :disabled="downloadingId === result.id" @click="downloadPdf(result)">
               {{ downloadingId === result.id ? 'Se generează...' : '📄 Descarcă PDF' }}
             </button>
-            <button class="primary-btn" :disabled="aiLoading" @click="handleGenerateAiDiagnosis(result)">
-              {{ aiLoading ? 'Se analizează...' : '🤖 Analiză AI' }}
-            </button>
+
           </div>
         </div>
       </div>
     </div>
-
-    <Teleport to="body">
-      <div v-if="showAiModal" class="modal-backdrop" @click.self="closeAiModal">
-        <div class="modal-card">
-          <div class="modal-header">
-            <h3>🤖 Diagnostic aproximativ AI</h3>
-            <button class="close-btn" @click="closeAiModal">×</button>
-          </div>
-          <div class="modal-body">
-            <div v-if="aiLoading" class="info-box loading-box">
-              <span class="spinner" />Se analizează rezultatele de laborator...
-            </div>
-            <div v-else-if="aiError" class="info-box error">{{ aiError }}</div>
-            <div v-else-if="aiResult" class="ai-result">
-              <div class="ai-section">
-                <h4>Cauze posibile</h4>
-                <ul class="causes-list">
-                  <li v-for="cause in aiResult.possibleCauses" :key="cause">{{ cause }}</li>
-                </ul>
-              </div>
-              <div class="ai-section">
-                <h4>Nivel urgență</h4>
-                <span :class="['urgency-badge', urgencyClass(aiResult.urgencyLevel)]">{{ aiResult.urgencyLevel }}</span>
-              </div>
-              <div class="ai-section">
-                <h4>Pași recomandați</h4>
-                <p>{{ aiResult.recommendedNextSteps }}</p>
-              </div>
-              <div class="ai-section confidence-row">
-                <h4>Grad de încredere</h4>
-                <div class="confidence-bar-wrapper">
-                  <div class="confidence-bar" :style="{ width: formatConfidence(aiResult.confidence) }" />
-                </div>
-                <span class="confidence-pct">{{ formatConfidence(aiResult.confidence) }}</span>
-              </div>
-              <div class="disclaimer-box">
-                <small>⚠️ {{ aiResult.disclaimer }}</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
   </div>
 </template>
 
