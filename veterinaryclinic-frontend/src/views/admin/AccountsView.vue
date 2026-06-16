@@ -135,9 +135,6 @@
             <td>{{ client.address || '-' }}</td>
             <td>
               <div class="row-actions">
-                <button class="action-btn edit" @click="editClient(client.id)">
-                  Modifică
-                </button>
                 <button class="action-btn delete" @click="removeClient(client.id)">
                   Șterge
                 </button>

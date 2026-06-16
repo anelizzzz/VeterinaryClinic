@@ -79,7 +79,6 @@ namespace VeterinaryClinic.API.Services.AiDiagnosis
             using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
 
-            // Chat Completions răspunde în choices[0].message.content
             var outputText = document.RootElement
                 .GetProperty("choices")[0]
                 .GetProperty("message")
