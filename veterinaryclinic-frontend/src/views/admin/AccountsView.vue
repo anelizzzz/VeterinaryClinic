@@ -56,9 +56,6 @@
             <td>{{ roleLabel(user.role) }}</td>
             <td>
               <div class="row-actions">
-                <button class="action-btn edit" @click="editUser(user.id)">
-                  Modifică
-                </button>
                 <button
                   class="action-btn delete"
                   @click="removeUser(user.id, user.role)"
@@ -98,9 +95,6 @@
             <td class="bio-cell">{{ doctor.bio || '-' }}</td>
             <td>
               <div class="row-actions">
-                <button class="action-btn edit" @click="editDoctor(doctor.id)">
-                  Modifică
-                </button>
                 <button class="action-btn delete" @click="removeDoctor(doctor.id)">
                   Șterge
                 </button>
