@@ -46,20 +46,16 @@ namespace VeterinaryClinic.API.Services
 
             await _unitOfWork.Users.AddAsync(user);
 
-            // BUG FIX: SaveChangesAsync înainte de a folosi user.Id
-            // Fără asta, user.Id era 0 când era trimis în emailul adminului
             await _unitOfWork.SaveChangesAsync();
 
             if (!isAdmin)
             {
-                // Email utilizator — cont în așteptare
                 await _emailService.SendAccountPendingAsync(
                     toEmail: dto.Email,
                     userName: dto.Name,
                     role: dto.Role == UserRole.Doctor ? "doctor" : "client"
                 );
 
-                // Email admin cu cererea (acum user.Id e corect populat de EF)
                 var adminEmail = _configuration["Email:AdminEmail"] ?? _configuration["Email:FromEmail"] ?? "";
                 if (!string.IsNullOrWhiteSpace(adminEmail))
                 {
@@ -82,7 +78,6 @@ namespace VeterinaryClinic.API.Services
                 };
             }
 
-            // Admin — creat direct aprobat
             return new AuthResponseDto
             {
                 Token = GenerateToken(user),

@@ -71,3 +71,23 @@ export const updateAdoptionRequestStatus = async (
 ): Promise<void> => {
   await api.put(`/AdoptionRequests/${id}/status`, { status })
 }
+export interface AdoptionAnimalCreateDto {
+  name: string
+  species: string
+  breed: string
+  age: number
+  description: string
+  vaccines: string
+  imageUrl: string
+}
+
+export const createAdoptionAnimal = async (
+  data: AdoptionAnimalCreateDto
+): Promise<AdoptionAnimalResponseDto> => {
+  const response = await api.post<AdoptionAnimalResponseDto>('/AdoptionAnimals', data)
+  return response.data
+}
+
+export const deleteAdoptionAnimal = async (id: number): Promise<void> => {
+  await api.delete(`/AdoptionAnimals/${id}`)
+}

@@ -146,7 +146,6 @@ namespace VeterinaryClinic.API.Services
 
             await _unitOfWork.Appointments.AddAsync(appointment);
 
-            // Trimitem email de confirmare
             try
             {
                 var client = await _unitOfWork.Clients.GetByIdAsync(dto.ClientId);
@@ -178,7 +177,6 @@ namespace VeterinaryClinic.API.Services
             }
             catch
             {
-                // Email-ul nu blochează crearea programării
             }
 
             return new AppointmentResponseDto
