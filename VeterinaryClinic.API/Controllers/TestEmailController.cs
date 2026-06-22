@@ -14,10 +14,6 @@ namespace VeterinaryClinic.API.Controllers
             _emailService = emailService;
         }
 
-        /// <summary>
-        /// Trimite un email de test pentru a verifica configurația SMTP.
-        /// ȘTERGE acest controller după testare!
-        /// </summary>
         [HttpPost("send-test")]
         public async Task<IActionResult> SendTest([FromQuery] string toEmail)
         {

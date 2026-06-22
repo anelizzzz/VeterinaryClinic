@@ -31,7 +31,6 @@ export const updateClientProfile = async (
 ): Promise<void> => {
   await api.put('/Clients/profile', data)
 }
-// clientService.ts
 export const deleteClient = async (id: number): Promise<void> => {
   await api.delete(`/Clients/${id}`)
 }

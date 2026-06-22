@@ -16,7 +16,6 @@ namespace VeterinaryClinic.API.Services.Email
             _httpClient = httpClientFactory.CreateClient();
         }
 
-        // ── CONFIRMARE PROGRAMARE ────────────────────────────────────────────
         public async Task SendAppointmentConfirmationAsync(
             string toEmail, string clientName, string petName, string doctorName,
             DateTime date, string appointmentType, string? notes,
@@ -27,7 +26,6 @@ namespace VeterinaryClinic.API.Services.Email
             await SendEmailAsync(toEmail, clientName, subject, body, cancellationToken);
         }
 
-        // ── CONT ÎN AȘTEPTARE ────────────────────────────────────────────────
         public async Task SendAccountPendingAsync(
             string toEmail, string userName, string role,
             CancellationToken cancellationToken = default)
@@ -62,7 +60,6 @@ namespace VeterinaryClinic.API.Services.Email
             await SendEmailAsync(toEmail, userName, subject, body, cancellationToken);
         }
 
-        // ── CERERE NOUĂ PENTRU ADMIN ─────────────────────────────────────────
         public async Task SendNewAccountRequestToAdminAsync(
             string adminEmail, string userName, string userEmail,
             string role, int userId,
@@ -99,8 +96,6 @@ namespace VeterinaryClinic.API.Services.Email
 </body></html>";
             await SendEmailAsync(adminEmail, "Administrator", subject, body, cancellationToken);
         }
-
-        // ── CONT APROBAT ─────────────────────────────────────────────────────
         public async Task SendAccountApprovedAsync(
             string toEmail, string userName, string role,
             CancellationToken cancellationToken = default)
@@ -138,7 +133,6 @@ namespace VeterinaryClinic.API.Services.Email
             await SendEmailAsync(toEmail, userName, subject, body, cancellationToken);
         }
 
-        // ── CONT RESPINS ─────────────────────────────────────────────────────
         public async Task SendAccountRejectedAsync(
             string toEmail, string userName,
             CancellationToken cancellationToken = default)
@@ -170,7 +164,6 @@ namespace VeterinaryClinic.API.Services.Email
             await SendEmailAsync(toEmail, userName, subject, body, cancellationToken);
         }
 
-        // ── HELPER: Brevo HTTP API (nu SMTP — evită blocarea porturilor pe Railway) ──
         private async Task SendEmailAsync(
             string toEmail, string toName, string subject, string htmlBody,
             CancellationToken cancellationToken = default)
@@ -211,7 +204,6 @@ namespace VeterinaryClinic.API.Services.Email
             }
         }
 
-        // ── HTML BUILDER PROGRAMARE ───────────────────────────────────────────
         private static string BuildAppointmentHtmlBody(
             string clientName, string petName, string doctorName,
             DateTime date, string appointmentType, string? notes)

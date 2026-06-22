@@ -24,7 +24,6 @@ export interface LabResultResponseDto {
   filePath: string
   keyValues: string
   interpretation: string
-  // Date animal
   petName: string
   species: string
   breed: string

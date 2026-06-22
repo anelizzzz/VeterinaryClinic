@@ -14,7 +14,6 @@ using VeterinaryClinic.API.Services.Email;
 using VeterinaryClinic.API.Services.Pdf;
 using CloudinaryDotNet;
 
-// Fix pentru PostgreSQL DateTime timezone
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);

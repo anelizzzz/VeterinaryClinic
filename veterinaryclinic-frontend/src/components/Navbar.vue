@@ -48,7 +48,6 @@
                   👤 Profilul meu
                 </router-link>
 
-                <!-- Cereri cont — doar pentru admin -->
                 <router-link
                   v-if="authStore.user?.role === UserRole.Admin"
                   to="/admin/account-requests"
@@ -132,7 +131,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-// Reîncarcă contorul când userul se schimbă
 watch(() => authStore.user, () => { loadPendingCount() })
 </script>
 

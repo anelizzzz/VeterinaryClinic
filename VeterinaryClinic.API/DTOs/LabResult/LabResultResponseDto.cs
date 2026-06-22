@@ -11,7 +11,6 @@ namespace VeterinaryClinic.API.DTOs.LabResult
         public string KeyValues { get; set; } = "{}";
         public string Interpretation { get; set; } = string.Empty;
 
-        // Date animal
         public string PetName { get; set; } = string.Empty;
         public string Species { get; set; } = string.Empty;
         public string Breed { get; set; } = string.Empty;

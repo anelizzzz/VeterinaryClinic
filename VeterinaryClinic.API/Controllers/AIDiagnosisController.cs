@@ -28,7 +28,6 @@ namespace VeterinaryClinic.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AI Diagnosis failed");
-                // Returnăm mesajul exact ca să vedem ce s-a întâmplat
                 return StatusCode(500, new { error = ex.Message, inner = ex.InnerException?.Message });
             }
         }

@@ -28,13 +28,7 @@ const form = reactive<PetCreateForm>({
   vaccines: '',
   imageUrl: ''
 })
-const API_URL = import.meta.env.VITE_API_BASE_URL
 
-const getPetImage = (imageUrl: string) => {
-  if (!imageUrl) return '/default-pet.png'
-  if (imageUrl.startsWith('http')) return imageUrl
-  return `${API_URL}${imageUrl}`
-}
 async function loadClientId() {
   try {
     const profile = await getClientProfile()

@@ -245,7 +245,7 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore()
   
-  authStore.loadUser() // ← adaugă această linie
+  authStore.loadUser() 
   
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return '/login'

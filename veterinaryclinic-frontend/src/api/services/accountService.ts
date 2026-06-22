@@ -26,7 +26,6 @@ export const getUserById = async (id: number): Promise<UserAccountDto> => {
 export const updateUser = async (id: number, data: UserUpdateDto): Promise<void> => {
   await api.put(`/User/${id}`, data)
 }
-// accountService.ts
 export const deleteUser = async (id: number): Promise<void> => {
   await api.delete(`/User/${id}`)
 }

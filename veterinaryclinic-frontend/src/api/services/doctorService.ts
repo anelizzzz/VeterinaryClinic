@@ -57,7 +57,6 @@ export const getAllDoctors = async (): Promise<DoctorResponseDto[]> => {
   return response.data
 }
 
-// pentru pagina de profil doctor
 export const getDoctorProfile = async (): Promise<DoctorResponseDto> => {
   const response = await api.get<DoctorResponseDto>('/Doctors/profile')
   return response.data
@@ -68,7 +67,7 @@ export const updateDoctorProfile = async (
 ): Promise<void> => {
   await api.put('/Doctors/profile', data)
 }
-// doctorService.ts
+
 export const deleteDoctor = async (id: number): Promise<void> => {
   await api.delete(`/Doctors/${id}`)
 }

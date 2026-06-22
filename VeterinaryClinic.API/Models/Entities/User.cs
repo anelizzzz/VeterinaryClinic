@@ -12,7 +12,6 @@ namespace VeterinaryClinic.API.Models.Entities
         public string Phone { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
 
-        // Aprobare cont
         public bool IsApproved { get; set; } = false;
         public bool IsRejected { get; set; } = false;
     }

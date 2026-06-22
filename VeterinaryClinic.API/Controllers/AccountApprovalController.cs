@@ -20,7 +20,6 @@ namespace VeterinaryClinic.API.Controllers
             _emailService = emailService;
         }
 
-        // GET: lista conturi în așteptare
         [HttpGet("pending")]
         public async Task<IActionResult> GetPending()
         {
@@ -39,7 +38,6 @@ namespace VeterinaryClinic.API.Controllers
             return Ok(pending);
         }
 
-        // POST: aprobare cont
         [HttpPost("approve/{userId}")]
         public async Task<IActionResult> Approve(int userId)
         {
@@ -51,7 +49,6 @@ namespace VeterinaryClinic.API.Controllers
             user.IsRejected = false;
             await _unitOfWork.Users.UpdateAsync(user);
 
-            // Creăm profilul Client/Doctor dacă nu există
             if (user.Role == UserRole.Client)
             {
                 var existingClient = await _unitOfWork.Clients.GetByUserIdAsync(user.Id);
@@ -80,7 +77,6 @@ namespace VeterinaryClinic.API.Controllers
                 }
             }
 
-            // Trimite email de confirmare utilizatorului
             await _emailService.SendAccountApprovedAsync(
                 toEmail: user.Email,
                 userName: user.Name,
@@ -90,7 +86,6 @@ namespace VeterinaryClinic.API.Controllers
             return Ok(new { message = $"Contul lui {user.Name} a fost aprobat." });
         }
 
-        // POST: respingere cont
         [HttpPost("reject/{userId}")]
         public async Task<IActionResult> Reject(int userId)
         {
@@ -101,7 +96,6 @@ namespace VeterinaryClinic.API.Controllers
             user.IsRejected = true;
             await _unitOfWork.Users.UpdateAsync(user);
 
-            // Trimite email de respingere
             await _emailService.SendAccountRejectedAsync(
                 toEmail: user.Email,
                 userName: user.Name
